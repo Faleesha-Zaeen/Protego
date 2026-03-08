@@ -1,0 +1,52 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_20-af329abce7dc354de9619eea01e72d81ea17b790",
+  "solcVersion": "0.8.20",
+  "solcLongVersion": "0.8.20+commit.a1b79de6",
+  "userSourceNameMap": {
+    "contracts/DefenseExecutor.sol": "project/contracts/DefenseExecutor.sol",
+    "contracts/GuardianVault.sol": "project/contracts/GuardianVault.sol",
+    "contracts/RiskRegistry.sol": "project/contracts/RiskRegistry.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "shanghai",
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": [
+        "project/:@openzeppelin/contracts/=npm/@openzeppelin/contracts@5.6.1/",
+        "project/:@openzeppelin/contracts/=npm/@openzeppelin/contracts@5.6.1/"
+      ]
+    },
+    "sources": {
+      "npm/@openzeppelin/contracts@5.6.1/access/Ownable.sol": {
+        "content": "// SPDX-License-Identifier: MIT\n// OpenZeppelin Contracts (last updated v5.0.0) (access/Ownable.sol)\n\npragma solidity ^0.8.20;\n\nimport {Context} from \"../utils/Context.sol\";\n\n/**\n * @dev Contract module which provides a basic access control mechanism, where\n * there is an account (an owner) that can be granted exclusive access to\n * specific functions.\n *\n * The initial owner is set to the address provided by the deployer. This can\n * later be changed with {transferOwnership}.\n *\n * This module is used through inheritance. It will make available the modifier\n * `onlyOwner`, which can be applied to your functions to restrict their use to\n * the owner.\n */\nabstract contract Ownable is Context {\n    address private _owner;\n\n    /**\n     * @dev The caller account is not authorized to perform an operation.\n     */\n    error OwnableUnauthorizedAccount(address account);\n\n    /**\n     * @dev The owner is not a valid owner account. (eg. `address(0)`)\n     */\n    error OwnableInvalidOwner(address owner);\n\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\n\n    /**\n     * @dev Initializes the contract setting the address provided by the deployer as the initial owner.\n     */\n    constructor(address initialOwner) {\n        if (initialOwner == address(0)) {\n            revert OwnableInvalidOwner(address(0));\n        }\n        _transferOwnership(initialOwner);\n    }\n\n    /**\n     * @dev Throws if called by any account other than the owner.\n     */\n    modifier onlyOwner() {\n        _checkOwner();\n        _;\n    }\n\n    /**\n     * @dev Returns the address of the current owner.\n     */\n    function owner() public view virtual returns (address) {\n        return _owner;\n    }\n\n    /**\n     * @dev Throws if the sender is not the owner.\n     */\n    function _checkOwner() internal view virtual {\n        if (owner() != _msgSender()) {\n            revert OwnableUnauthorizedAccount(_msgSender());\n        }\n    }\n\n    /**\n     * @dev Leaves the contract without owner. It will not be possible to call\n     * `onlyOwner` functions. Can only be called by the current owner.\n     *\n     * NOTE: Renouncing ownership will leave the contract without an owner,\n     * thereby disabling any functionality that is only available to the owner.\n     */\n    function renounceOwnership() public virtual onlyOwner {\n        _transferOwnership(address(0));\n    }\n\n    /**\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\n     * Can only be called by the current owner.\n     */\n    function transferOwnership(address newOwner) public virtual onlyOwner {\n        if (newOwner == address(0)) {\n            revert OwnableInvalidOwner(address(0));\n        }\n        _transferOwnership(newOwner);\n    }\n\n    /**\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\n     * Internal function without access restriction.\n     */\n    function _transferOwnership(address newOwner) internal virtual {\n        address oldOwner = _owner;\n        _owner = newOwner;\n        emit OwnershipTransferred(oldOwner, newOwner);\n    }\n}\n"
+      },
+      "npm/@openzeppelin/contracts@5.6.1/utils/Context.sol": {
+        "content": "// SPDX-License-Identifier: MIT\n// OpenZeppelin Contracts (last updated v5.0.1) (utils/Context.sol)\n\npragma solidity ^0.8.20;\n\n/**\n * @dev Provides information about the current execution context, including the\n * sender of the transaction and its data. While these are generally available\n * via msg.sender and msg.data, they should not be accessed in such a direct\n * manner, since when dealing with meta-transactions the account sending and\n * paying for execution may not be the actual sender (as far as an application\n * is concerned).\n *\n * This contract is only required for intermediate, library-like contracts.\n */\nabstract contract Context {\n    function _msgSender() internal view virtual returns (address) {\n        return msg.sender;\n    }\n\n    function _msgData() internal view virtual returns (bytes calldata) {\n        return msg.data;\n    }\n\n    function _contextSuffixLength() internal view virtual returns (uint256) {\n        return 0;\n    }\n}\n"
+      },
+      "project/contracts/DefenseExecutor.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.20;\r\n\r\n/// @notice Interface for GuardianVault used by DefenseExecutor.\r\ninterface IGuardianVault {\r\n    function secureTransfer(address user, uint256 amount) external;\r\n}\r\n\r\n/// @notice Interface for RiskRegistry used by DefenseExecutor.\r\ninterface IRiskRegistry {\r\n    function getRiskScore(address user) external view returns (uint256);\r\n}\r\n\r\n/// @title DefenseExecutor\r\n/// @notice Triggers automated defense actions when high-risk transactions are detected.\r\ncontract DefenseExecutor {\r\n    IGuardianVault public guardianVault;\r\n    IRiskRegistry public riskRegistry;\r\n\r\n    // Fixed demo amount that will be moved into the vault when defense triggers.\r\n    uint256 public constant DEFENSE_AMOUNT = 0.1 ether;\r\n\r\n    event DefenseTriggered(address indexed user, uint256 riskScore);\r\n\r\n    /// @param _guardianVault Address of the GuardianVault contract.\r\n    /// @param _riskRegistry Address of the RiskRegistry contract.\r\n    constructor(address _guardianVault, address _riskRegistry) {\r\n        require(_guardianVault != address(0), \"Invalid vault\");\r\n        require(_riskRegistry != address(0), \"Invalid registry\");\r\n        guardianVault = IGuardianVault(_guardianVault);\r\n        riskRegistry = IRiskRegistry(_riskRegistry);\r\n    }\r\n\r\n    /// @notice Evaluate a user's risk score and, if high, trigger a defense action.\r\n    /// @dev If risk score > 70, calls GuardianVault.secureTransfer(user, DEFENSE_AMOUNT).\r\n    /// @param user The address of the user to evaluate.\r\n    function evaluateAndDefend(address user) external {\r\n        uint256 score = riskRegistry.getRiskScore(user);\r\n\r\n        if (score > 70) {\r\n            guardianVault.secureTransfer(user, DEFENSE_AMOUNT);\r\n            emit DefenseTriggered(user, score);\r\n        }\r\n    }\r\n}\r\n"
+      },
+      "project/contracts/GuardianVault.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.20;\r\n\r\nimport \"@openzeppelin/contracts/access/Ownable.sol\";\r\n\r\n/// @title GuardianVault\r\n/// @notice Secure storage vault that holds user assets when a security threat is detected.\r\ncontract GuardianVault is Ownable {\r\n    mapping(address => uint256) public balances;\r\n\r\n    event Deposit(address indexed user, uint256 amount);\r\n    event Withdraw(address indexed user, uint256 amount);\r\n    event SecureTransfer(address indexed user, uint256 amount);\r\n\r\n    constructor() Ownable(msg.sender) {}\r\n\r\n    /// @notice Deposit native tokens into the vault and credit the sender's balance.\r\n    function deposit() external payable {\r\n        require(msg.value > 0, \"No value sent\");\r\n        balances[msg.sender] += msg.value;\r\n        emit Deposit(msg.sender, msg.value);\r\n    }\r\n\r\n    /// @notice Withdraw a specific amount of previously deposited funds.\r\n    /// @param amount The amount to withdraw.\r\n    function withdraw(uint256 amount) external {\r\n        require(balances[msg.sender] >= amount, \"Insufficient balance\");\r\n        balances[msg.sender] -= amount;\r\n        (bool ok, ) = msg.sender.call{value: amount}(\"\");\r\n        require(ok, \"Transfer failed\");\r\n        emit Withdraw(msg.sender, amount);\r\n    }\r\n\r\n    /// @notice Move funds into the vault for a given user during defense events.\r\n    /// @dev Restricted to the contract owner (e.g., a defense executor).\r\n    /// @param user The address of the user being protected.\r\n    /// @param amount The amount to assign to the user's vault balance.\r\n    function secureTransfer(address user, uint256 amount) external onlyOwner {\r\n        require(address(this).balance >= amount, \"Vault balance too low\");\r\n        balances[user] += amount;\r\n        emit SecureTransfer(user, amount);\r\n    }\r\n}\r\n"
+      },
+      "project/contracts/RiskRegistry.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.20;\r\n\r\nimport \"@openzeppelin/contracts/access/Ownable.sol\";\r\n\r\n/// @title RiskRegistry\r\n/// @notice Stores risk scores for wallets detected by the AegisDot backend.\r\ncontract RiskRegistry is Ownable {\r\n    mapping(address => uint256) public riskScores;\r\n\r\n    event RiskScoreUpdated(address indexed user, uint256 score);\r\n\r\n    constructor() Ownable(msg.sender) {}\r\n\r\n    /// @notice Update the risk score for a given user.\r\n    /// @dev Only the owner (e.g., a backend controller) can call this.\r\n    function updateRiskScore(address user, uint256 score) external onlyOwner {\r\n        require(user != address(0), \"Invalid user\");\r\n        require(score <= 100, \"Score too high\");\r\n        riskScores[user] = score;\r\n        emit RiskScoreUpdated(user, score);\r\n    }\r\n\r\n    /// @notice Read the risk score for a given user.\r\n    function getRiskScore(address user) external view returns (uint256) {\r\n        return riskScores[user];\r\n    }\r\n}\r\n"
+      }
+    }
+  }
+}
