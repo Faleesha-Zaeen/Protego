@@ -2,20 +2,33 @@ import { ArrowDown } from "lucide-react";
 
 const stages = [
   {
-    title: "Risk Engine",
-    description: "Scores transactions using heuristics and on-chain context.",
+    title: "User Wallet",
+    description:
+      "End-user signs transactions that may contain risky approvals or transfers.",
   },
   {
-    title: "RiskRegistry",
-    description: "Persists risk scores on-chain per wallet.",
+    title: "AegisDot Frontend",
+    description:
+      "dApp UI that surfaces risk insights and routes transactions into the security pipeline.",
+  },
+  {
+    title: "Risk Engine (Off-chain analysis)",
+    description:
+      "Node-based service that analyzes approvals, historical behavior, and context before submission.",
+  },
+  {
+    title: "PolkaVM Precompile Hook (future)",
+    description:
+      "Planned Rust risk module running as a PolkaVM precompile inside the Polkadot runtime.",
   },
   {
     title: "DefenseExecutor",
-    description: "Evaluates scores and triggers protective actions.",
+    description: "Smart contract that evaluates risk signals and enforces defense policies.",
   },
   {
     title: "GuardianVault",
-    description: "Secures funds when a high-risk event is detected.",
+    description:
+      "Escrow-style vault that can isolate or protect funds when high risk is detected.",
   },
 ];
 

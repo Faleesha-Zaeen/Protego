@@ -69,6 +69,14 @@ export default function Navbar() {
           >
             Architecture
           </NavLink>
+          <span className="ml-3 px-3 py-1 rounded-full text-[10px] bg-purple-900/40 border border-purple-500/60 text-purple-200">
+            Web3 Security 
+            
+            
+            
+            
+            · Polkadot Hub Testnet
+          </span>
         </div>
 
       </nav>

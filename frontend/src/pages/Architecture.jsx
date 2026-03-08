@@ -10,6 +10,11 @@ export default function ArchitecturePage() {
           change any backend or contract behavior, it merely surfaces the
           components that are already running behind the scenes.
         </p>
+        <p className="text-xs text-slate-400 max-w-xl italic">
+          AegisDot is designed to integrate with PolkaVM precompiles, allowing
+          high-performance risk analysis modules written in Rust to run inside
+          the Polkadot runtime.
+        </p>
       </div>
       <PipelineDiagram />
     </div>
