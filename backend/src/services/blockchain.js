@@ -10,6 +10,7 @@ function decodeTransactionData(inputData) {
     return {
       method: 'unknown',
       isApproval: false,
+      isTransfer: false,
     };
   }
 
@@ -19,17 +20,28 @@ function decodeTransactionData(inputData) {
 
   // ERC20 approve function selector
   const APPROVE_SELECTOR = '0x095ea7b3';
+  const TRANSFER_SELECTOR = '0xa9059cbb';
 
   if (data.startsWith(APPROVE_SELECTOR)) {
     return {
       method: 'approve',
       isApproval: true,
+      isTransfer: false,
+    };
+  }
+
+  if (data.startsWith(TRANSFER_SELECTOR)) {
+    return {
+      method: 'transfer',
+      isApproval: false,
+      isTransfer: true,
     };
   }
 
   return {
     method: 'unknown',
     isApproval: false,
+    isTransfer: false,
   };
 }
 

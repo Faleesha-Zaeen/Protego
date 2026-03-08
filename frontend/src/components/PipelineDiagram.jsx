@@ -3,32 +3,54 @@ import { ArrowDown } from "lucide-react";
 const stages = [
   {
     title: "User Wallet",
-    description:
-      "End-user signs transactions that may contain risky approvals or transfers.",
+    description: "Origin point where the user initiates an approval or transfer.",
   },
   {
-    title: "AegisDot Frontend",
+    title: "AegisDot Analyzer",
     description:
-      "dApp UI that surfaces risk insights and routes transactions into the security pipeline.",
+      "Surfaces pre-sign insights and streams transactions into the analyzer.",
   },
   {
-    title: "Risk Engine (Off-chain analysis)",
+    title: "Feature Extraction",
     description:
-      "Node-based service that analyzes approvals, historical behavior, and context before submission.",
+      "Derives unlimited approval, large transfer, and unknown contract signals.",
   },
   {
-    title: "PolkaVM Precompile Hook (future)",
+    title: "AI Risk Model",
     description:
-      "Planned Rust risk module running as a PolkaVM precompile inside the Polkadot runtime.",
+      "RandomForestClassifier scoring risky patterns before hitting the chain.",
+  },
+  {
+    title: "Rust Risk Engine",
+    description:
+      "Cargo-powered scoring module that outputs deterministic risk flags for each transaction.",
+  },
+  {
+    title: "PolkaVM Layer",
+    description:
+      "Planned runtime hook where the same Rust logic can run natively inside Polkadot.",
+  },
+  {
+    title: "RiskRegistry",
+    description: "On-chain ledger that stores the latest score and enforcement status per wallet.",
   },
   {
     title: "DefenseExecutor",
-    description: "Smart contract that evaluates risk signals and enforces defense policies.",
+    description:
+      "Coordinated contract that routes mitigations once a high score is recorded.",
   },
   {
     title: "GuardianVault",
+    description: "Vault that can isolate funds or enforce withdrawal delays while threats are active.",
+  },
+  {
+    title: "Polkadot Hub",
+    description: "Execution environment providing RPC, consensus, and security guarantees.",
+  },
+  {
+    title: "XCM Monitoring",
     description:
-      "Escrow-style vault that can isolate or protect funds when high risk is detected.",
+      "Observability layer for cross-chain intents so that risky transfers can be blocked upstream.",
   },
 ];
 

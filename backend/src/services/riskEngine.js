@@ -1,8 +1,15 @@
 // Risk analysis engine for AegisDot
-// Refined heuristic-based scoring for prototype phase.
+// Delegates core scoring to the Rust risk engine for better parity with on-chain logic.
 
+const path = require('path');
+const { execSync } = require('child_process');
 const { decodeTransactionData } = require('./blockchain');
 const { updateRiskScore, callDefense } = require('./contracts');
+const { addDefenseEvent } = require('./defenseEvents');
+
+const WORKSPACE_ROOT = path.join(__dirname, '..', '..', '..');
+const RUST_ENGINE_PATH = path.join(WORKSPACE_ROOT, 'rust-risk-engine');
+const AI_MODEL_SCRIPT = path.join(WORKSPACE_ROOT, 'ai-risk-model', 'predict.py');
 
 // Helper: check if transaction represents an unlimited token approval
 function isUnlimitedApproval(tx) {
@@ -36,6 +43,75 @@ function isUnlimitedApproval(tx) {
   }
 
   return false;
+}
+
+function flagToCliValue(value) {
+  return value ? 'true' : 'false';
+}
+
+function flagToBinary(value) {
+  return value ? '1' : '0';
+}
+
+function invokeRustRiskEngine({ unlimitedApproval, largeTransfer, unknownContract }) {
+  const command = `cargo run --quiet -- ${flagToCliValue(unlimitedApproval)} ${flagToCliValue(largeTransfer)} ${flagToCliValue(unknownContract)}`;
+  const output = execSync(command, {
+    cwd: RUST_ENGINE_PATH,
+    stdio: 'pipe',
+    encoding: 'utf8',
+  }).trim();
+
+  const match = output.match(/(\d+)/);
+  if (!match) {
+    throw new Error(`Rust engine returned unexpected output: ${output}`);
+  }
+
+  return Number(match[1]);
+}
+
+function invokeAiRiskModel({
+  unlimitedApproval,
+  largeTransfer,
+  unknownContract,
+  tokenTransfer,
+  approvalAmount,
+}) {
+  const numericApproval = Number(approvalAmount) || 0;
+  const command =
+    `python "${AI_MODEL_SCRIPT}" ${flagToBinary(unlimitedApproval)} ${flagToBinary(largeTransfer)} ${flagToBinary(unknownContract)} ${flagToBinary(tokenTransfer)} ${numericApproval}`;
+  const output = execSync(command, {
+    cwd: WORKSPACE_ROOT,
+    stdio: 'pipe',
+    encoding: 'utf8',
+  }).trim();
+
+  const match = output.match(/Risk Score:\s*(\d+)/i);
+  if (!match) {
+    throw new Error(`AI model returned unexpected output: ${output}`);
+  }
+
+  return Number(match[1]);
+}
+
+function fallbackJavascriptScore({ unlimitedApproval, largeTransfer, unknownContract }) {
+  let score = 0;
+  if (unlimitedApproval) score += 40;
+  if (largeTransfer) score += 30;
+  if (unknownContract) score += 20;
+  return score;
+}
+
+function fallbackAiScore({ unlimitedApproval, largeTransfer, unknownContract }) {
+  if ((unlimitedApproval && unknownContract) || (largeTransfer && unknownContract)) {
+    return 80;
+  }
+  if (unlimitedApproval || largeTransfer) {
+    return 50;
+  }
+  if (unknownContract) {
+    return 50;
+  }
+  return 20;
 }
 
 // Helper: check if this is a very large transfer (> 5 ETH or equivalent)
@@ -92,11 +168,10 @@ async function analyzeTransaction(tx) {
     isKnownContract,
   } = tx || {};
 
-  let score = 0;
   const reasons = [];
   
   // Decode calldata when present to detect ERC20 approve
-  let decoded = { method: method || 'unknown', isApproval: false };
+  let decoded = { method: method || 'unknown', isApproval: false, isTransfer: false };
   if (tx && (tx.inputData || tx.data)) {
     decoded = decodeTransactionData(tx.inputData || tx.data);
   }
@@ -106,39 +181,77 @@ async function analyzeTransaction(tx) {
     isKnownContract === false ||
     contractReputation === 'unknown' ||
     (!contractReputation && !isKnownContract && !!contractAddress);
-  if (unknownContract) {
-    score += 30;
-    reasons.push('Contract is unknown.');
-  }
 
   // Rule: Unlimited token approval → +40
   // Only evaluate this rule when the calldata indicates an ERC20 approve call
-  if (decoded.isApproval === true) {
-    // Derive an "approval amount" from transaction fields
-    let approvalAmount;
-    if (typeof tx?.approvalAmount !== 'undefined') {
-      approvalAmount = tx.approvalAmount;
-    } else if (typeof tx?.amount !== 'undefined') {
-      approvalAmount = tx.amount;
-    } else if (typeof value !== 'undefined') {
-      approvalAmount = value;
-    }
+  let unlimitedApprovalFlag = false;
+  let approvalAmount = null;
+  if (typeof tx?.approvalAmount !== 'undefined') {
+    approvalAmount = tx.approvalAmount;
+  } else if (typeof tx?.amount !== 'undefined') {
+    approvalAmount = tx.amount;
+  } else if (typeof value !== 'undefined') {
+    approvalAmount = value;
+  }
 
+  if (decoded.isApproval === true) {
     const veryLargeNumeric =
       approvalAmount != null && !Number.isNaN(Number(approvalAmount)) && Number(approvalAmount) > 1e9;
 
-    if (
-      isUnlimitedApproval({
-        type: decoded.method || method,
-        approvalAmount,
-        amount: approvalAmount,
-        value,
-        unlimitedApproval: tx?.unlimitedApproval || veryLargeNumeric,
-      })
-    ) {
-      score += 40;
-      reasons.push('Transaction requests unlimited token approval.');
-    }
+    unlimitedApprovalFlag = isUnlimitedApproval({
+      type: decoded.method || method,
+      approvalAmount,
+      amount: approvalAmount,
+      value,
+      unlimitedApproval: tx?.unlimitedApproval || veryLargeNumeric,
+    });
+  }
+
+  const largeTransferFlag = isLargeTransfer({ amount: tx?.amount, value });
+  const tokenTransferFlag =
+    decoded.isTransfer === true || ((method || '').toLowerCase() === 'transfer') ||
+    ((tx?.type || '').toLowerCase() === 'transfer');
+
+  const flags = {
+    unlimitedApproval: unlimitedApprovalFlag,
+    largeTransfer: largeTransferFlag,
+    unknownContract,
+    tokenTransfer: tokenTransferFlag,
+    approvalAmount: approvalAmount ?? 0,
+  };
+
+  let rustScore;
+  try {
+    rustScore = invokeRustRiskEngine(flags);
+  } catch (err) {
+    console.error('Rust risk engine failed, falling back to JavaScript scoring.', err);
+    rustScore = fallbackJavascriptScore(flags);
+  }
+
+  let aiScore;
+  try {
+    aiScore = invokeAiRiskModel(flags);
+  } catch (err) {
+    console.error('AI risk model failed, falling back to heuristic scoring.', err);
+    aiScore = fallbackAiScore(flags);
+  }
+
+  let score = aiScore * 0.6 + rustScore * 0.4;
+
+  // Attach AI insight description
+  const aiRiskLevel = mapScoreToLevel(aiScore);
+  if (aiRiskLevel === 'HIGH') {
+    reasons.push('AI model marked this transaction as HIGH risk.');
+  } else if (aiRiskLevel === 'MEDIUM') {
+    reasons.push('AI model marked this transaction as MEDIUM risk.');
+  }
+
+  if (unknownContract) {
+    reasons.push('Contract is unknown.');
+  }
+
+  if (unlimitedApprovalFlag) {
+    reasons.push('Transaction requests unlimited token approval.');
   }
 
   // Rule: Contract blacklist → +80
@@ -147,9 +260,7 @@ async function analyzeTransaction(tx) {
     reasons.push('Contract address is on the blacklist.');
   }
 
-  // Rule: Very large transfer (> 5 ETH or equivalent) → +25
-  if (isLargeTransfer({ amount: tx?.amount, value })) {
-    score += 25;
+  if (largeTransferFlag) {
     reasons.push('Transaction attempts a very large transfer (> 5 ETH or equivalent).');
   }
 
@@ -167,7 +278,19 @@ async function analyzeTransaction(tx) {
       await updateRiskScore(tx.walletAddress, score);
 
       console.log('AegisDot triggering defense executor...');
-      await callDefense(tx.walletAddress);
+      const defenseReceipt = await callDefense(tx.walletAddress);
+
+      const defenseTxHash = defenseReceipt?.transactionHash || defenseReceipt?.hash;
+      if (defenseTxHash) {
+        addDefenseEvent({
+          wallet: tx.walletAddress,
+          txHash: defenseTxHash,
+          timestamp: Date.now(),
+          status: 'confirmed',
+        });
+      } else {
+        console.warn('Defense receipt missing transaction hash; event not recorded.');
+      }
     } catch (err) {
       console.error('AegisDot on-chain defense failed:', err);
     }

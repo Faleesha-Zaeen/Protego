@@ -9,6 +9,7 @@ const riskEngine = require('./services/riskEngine');
 // Routers
 const analyzeRouterFactory = require('./routes/analyze');
 const simulateAttackRouterFactory = require('./routes/simulateAttack');
+const defenseEventsRouter = require('./routes/defenseEvents');
 
 const app = express();
 
@@ -27,6 +28,9 @@ app.use(analyzeRouterFactory(riskEngine));
 
 // Mount attack simulation under /api/simulate-attack
 app.use('/api/simulate-attack', simulateAttackRouterFactory(riskEngine));
+
+// Expose defense events feed
+app.use(defenseEventsRouter);
 
 // Server configuration
 const PORT = process.env.PORT || 5000;

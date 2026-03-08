@@ -13,3 +13,8 @@ export async function simulateAttack(params = {}) {
   });
   return res.data;
 }
+
+export async function recordDefenseEvent(event) {
+  const res = await axios.post(`${API_BASE}/api/defense-events`, event);
+  return res.data;
+}

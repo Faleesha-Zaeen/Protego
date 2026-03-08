@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Zap, ShieldCheck } from "lucide-react";
-import { simulateAttack } from "../api/backend";
+import { simulateAttack, recordDefenseEvent } from "../api/backend";
 import { getContracts } from "../web3/contracts";
 
 export default function AttackSimulator({
@@ -38,10 +38,22 @@ export default function AttackSimulator({
             method: "eth_accounts",
           });
           const tx = await defenseExecutor.evaluateAndDefend(accounts[0]);
+          const txHash = tx.hash;
           pushLog("Defense transaction sent. Waiting for confirmation...");
           const receipt = await tx.wait();
-          setDefenseTx(tx.hash);
-          pushLog("Defense confirmed on-chain: " + receipt.hash);
+          setDefenseTx(txHash);
+          pushLog("Defense confirmed on-chain: " + (receipt?.hash || txHash));
+
+          try {
+            await recordDefenseEvent({
+              wallet: accounts[0] || walletAddress || "0xUnknown",
+              txHash,
+              timestamp: Date.now(),
+              status: "confirmed",
+            });
+          } catch (eventErr) {
+            console.error("Failed to sync defense event with backend", eventErr);
+          }
         } catch (chainError) {
           console.error(chainError);
           pushLog("On-chain defense call failed: " + chainError.message);

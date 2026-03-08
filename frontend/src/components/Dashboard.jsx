@@ -1,11 +1,46 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Cpu, ShieldCheck } from "lucide-react";
 import NetworkStatus from "./NetworkStatus.jsx";
+import RuntimeStatus from "./RuntimeStatus.jsx";
 import DefenseEventsFeed from "./DefenseEventsFeed.jsx";
+import XcmMonitor from "./XcmMonitor.jsx";
+import RiskEngineStatus from "./RiskEngineStatus.jsx";
+import AIModelStatus from "./AIModelStatus.jsx";
 
 export default function Dashboard() {
   const [account, setAccount] = useState("");
+  const [defenseEvents, setDefenseEvents] = useState([]);
+
+  const backendBaseUrl =
+    import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "") || "http://localhost:5000";
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchDefenseEvents() {
+      try {
+        const res = await fetch(`${backendBaseUrl}/api/defense-events`);
+        if (!res.ok) {
+          throw new Error(`Failed to fetch defense events: ${res.status}`);
+        }
+        const data = await res.json();
+        if (isMounted && Array.isArray(data?.events)) {
+          setDefenseEvents(data.events);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    fetchDefenseEvents();
+    const interval = setInterval(fetchDefenseEvents, 10000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [backendBaseUrl]);
 
   const threatFeed = useMemo(
     () => [
@@ -132,7 +167,7 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <DefenseEventsFeed />
+        <DefenseEventsFeed events={defenseEvents} />
 
         <NetworkStatus />
 
@@ -160,6 +195,13 @@ export default function Dashboard() {
             </div>
           </div>
         </section>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <RuntimeStatus />
+        <XcmMonitor />
+        <RiskEngineStatus />
+        <AIModelStatus />
       </div>
     </div>
   );
