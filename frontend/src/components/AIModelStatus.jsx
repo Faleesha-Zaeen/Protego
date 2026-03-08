@@ -60,7 +60,7 @@ export default function AIModelStatus() {
   };
 
   return (
-    <section className="rounded-3xl bg-slate-900/80 border border-slate-700/70 p-5 space-y-4">
+    <section className="rounded-xl bg-card border border-border shadow-lg p-6 space-y-4">
       <header>
         <h2 className="text-lg font-semibold text-slate-50">AI Risk Model</h2>
         <p className="text-xs text-slate-400">Live ML signal fused with the Rust risk engine.</p>
@@ -79,9 +79,9 @@ export default function AIModelStatus() {
 
 function CardRow({ label, value, highlight = false }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl bg-slate-950/70 border border-slate-800/70 px-4 py-3">
+    <div className="flex items-center justify-between rounded-xl bg-[#0B0F19] border border-border px-4 py-3">
       <span className="text-[11px] uppercase tracking-wide text-slate-400">{label}</span>
-      <span className={`text-sm font-semibold ${highlight ? 'text-emerald-300' : 'text-slate-50'}`}>
+      <span className={`text-sm font-semibold ${highlight ? "text-safe" : "text-slate-50"}`}>
         {value}
       </span>
     </div>

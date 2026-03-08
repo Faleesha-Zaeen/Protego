@@ -49,7 +49,7 @@ export default function RuntimeStatus() {
   }, []);
 
   return (
-    <section className="rounded-3xl bg-slate-900/80 border border-slate-700/70 p-5 space-y-3">
+    <section className="rounded-xl bg-card border border-border shadow-lg p-6 space-y-3">
       <header>
         <h2 className="text-lg font-semibold text-slate-50">Polkadot Runtime Status</h2>
         <p className="text-xs text-slate-400">Live metadata pulled from the Polkadot Hub EVM endpoint.</p>
@@ -65,23 +65,23 @@ export default function RuntimeStatus() {
         </div>
         <div>
           <p className="text-slate-400 text-[11px] uppercase tracking-wide">Latest Block</p>
-          <p className="text-slate-50 font-semibold">
+          <p className="text-slate-50 font-semibold font-mono">
             {runtimeInfo.blockNumber !== null ? runtimeInfo.blockNumber : "Loading..."}
           </p>
         </div>
         <div>
           <p className="text-slate-400 text-[11px] uppercase tracking-wide">Chain ID</p>
-          <p className="text-slate-50 font-semibold">
+          <p className="text-slate-50 font-semibold font-mono">
             {runtimeInfo.chainId !== null ? runtimeInfo.chainId : "Loading..."}
           </p>
         </div>
         <div>
           <p className="text-slate-400 text-[11px] uppercase tracking-wide">RPC Status</p>
-          <p className={runtimeInfo.connected ? "text-emerald-300 font-semibold" : "text-red-300 font-semibold"}>
+          <p className={runtimeInfo.connected ? "text-safe font-semibold" : "text-danger font-semibold"}>
             {runtimeInfo.connected ? "Connected" : runtimeInfo.error ? "Error" : "Connecting"}
           </p>
           {runtimeInfo.error && (
-            <p className="text-[11px] text-red-300 mt-1">{runtimeInfo.error}</p>
+            <p className="text-[11px] text-danger mt-1">{runtimeInfo.error}</p>
           )}
         </div>
       </div>

@@ -33,7 +33,7 @@ export default function MetricCards() {
       {cards.map(({ title, value, icon: Icon, color }) => (
         <div
           key={title}
-          className="rounded-2xl bg-slate-900/80 border border-slate-700/70 px-3 py-3 flex flex-col gap-2 text-xs shadow-glow/20"
+          className="rounded-xl bg-card border border-border px-4 py-4 flex flex-col gap-2 text-xs shadow-lg"
         >
           <div className="flex items-center justify-between">
             <span className="text-slate-400">{title}</span>
@@ -43,7 +43,7 @@ export default function MetricCards() {
               <Icon className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="text-lg font-semibold text-slate-50">{value}</div>
+          <div className="text-lg font-semibold text-slate-50 font-mono">{value}</div>
         </div>
       ))}
     </div>

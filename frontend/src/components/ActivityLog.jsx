@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function ActivityLog({ entries }) {
   return (
-    <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 h-64 flex flex-col overflow-hidden shadow-inner">
+    <div className="bg-card border border-border rounded-xl p-4 h-72 flex flex-col overflow-hidden shadow-lg">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-xs font-semibold text-slate-100 uppercase tracking-wide">
           Activity Log

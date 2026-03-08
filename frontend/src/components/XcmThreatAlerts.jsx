@@ -53,16 +53,16 @@ export default function XcmThreatAlerts() {
   const badgeStyles = useMemo(() => {
     switch (summary.riskLevel) {
       case "High":
-        return "text-red-200 bg-red-500/20 border border-red-500/30";
+        return "text-danger bg-danger/10 border border-danger/30";
       case "Medium":
-        return "text-amber-200 bg-amber-500/20 border border-amber-500/30";
+        return "text-warning bg-warning/10 border border-warning/30";
       default:
-        return "text-emerald-200 bg-emerald-500/15 border border-emerald-400/20";
+        return "text-safe bg-safe/10 border border-safe/30";
     }
   }, [summary.riskLevel]);
 
   return (
-    <section className="rounded-3xl bg-slate-900/80 border border-slate-700/70 p-5 space-y-4">
+    <section className="rounded-xl bg-card border border-border shadow-lg p-6 space-y-4">
       <header className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <div>
@@ -87,10 +87,10 @@ export default function XcmThreatAlerts() {
           alerts.map((alert) => (
             <article
               key={`${alert.id}-${alert.block}`}
-              className="rounded-2xl bg-slate-950/80 border border-slate-800/70 px-4 py-3 space-y-1"
+              className="rounded-xl bg-[#0B0F19] border border-border px-4 py-3 space-y-1"
             >
               <div className="flex items-center justify-between text-xs text-slate-300">
-                <span className="flex items-center gap-1 font-semibold text-amber-200">
+                <span className="flex items-center gap-1 font-semibold text-warning">
                   <AlertTriangle className="w-3.5 h-3.5" />
                   {alert.title || "⚠ XCM Alert"}
                 </span>

@@ -6,7 +6,7 @@ export default function DefenseEventsFeed({ events = [] }) {
   const hasEvents = events.length > 0;
 
   return (
-    <section className="rounded-3xl bg-slate-900/80 border border-slate-700/70 p-5 space-y-4">
+    <section className="rounded-xl bg-card border border-border shadow-lg p-6 space-y-4">
       <header className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-slate-50">Defense Events</h2>
@@ -14,7 +14,7 @@ export default function DefenseEventsFeed({ events = [] }) {
             Real-time actions initiated by DefenseExecutor & GuardianVault.
           </p>
         </div>
-        <ShieldAlert className="w-5 h-5 text-highlight" />
+        <ShieldAlert className="w-5 h-5 text-accent" />
       </header>
       <div className="space-y-3">
         {hasEvents ? (
@@ -26,7 +26,7 @@ export default function DefenseEventsFeed({ events = [] }) {
             return (
               <div
                 key={event.txHash}
-                className="rounded-2xl border border-slate-700/70 bg-slate-950/70 px-4 py-3"
+                className="rounded-xl border border-border bg-[#0B0F19] px-4 py-3"
               >
                 <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
                   <span>{timestampLabel}</span>
@@ -38,7 +38,7 @@ export default function DefenseEventsFeed({ events = [] }) {
                   href={`${explorerBase}${event.txHash}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-3 inline-flex items-center justify-center px-3 py-1.5 rounded-xl border border-slate-700 bg-slate-800/70 text-[11px] font-semibold text-highlight hover:text-white hover:border-highlight transition-colors"
+                  className="mt-3 inline-flex items-center justify-center px-3 py-1.5 rounded-xl border border-border bg-card/70 text-[11px] font-semibold text-accent hover:text-white hover:border-accent transition-colors"
                 >
                   View on Explorer
                 </a>
@@ -46,8 +46,8 @@ export default function DefenseEventsFeed({ events = [] }) {
             );
           })
         ) : (
-          <div className="rounded-2xl border border-dashed border-slate-700/70 bg-slate-950/50 px-4 py-5 text-center text-[12px] text-slate-400">
-            No defense events yet. Run the attack simulator to trigger an automated response.
+          <div className="rounded-xl border border-dashed border-border bg-[#0B0F19] px-4 py-5 text-center text-[12px] text-slate-400">
+            No automated defenses triggered yet.
           </div>
         )}
       </div>
@@ -80,13 +80,13 @@ function StatusBadge({ status }) {
   const normalized = status?.toLowerCase();
   if (normalized === "confirmed") {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold text-emerald-200 bg-emerald-500/20">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold text-safe bg-safe/10">
         <CheckCircle2 className="w-3 h-3" /> Confirmed
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold text-amber-200 bg-amber-500/20">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold text-warning bg-warning/10">
       <Clock3 className="w-3 h-3" /> Pending
     </span>
   );

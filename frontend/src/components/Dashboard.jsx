@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Cpu, ShieldCheck } from "lucide-react";
+import { Cpu, ShieldCheck, AlertTriangle, Shield, Users } from "lucide-react";
 import NetworkStatus from "./NetworkStatus.jsx";
 import RuntimeStatus from "./RuntimeStatus.jsx";
 import DefenseEventsFeed from "./DefenseEventsFeed.jsx";
@@ -74,6 +74,33 @@ export default function Dashboard() {
     systemStatus: "ACTIVE",
   };
 
+  const topStats = [
+    {
+      label: "Threats Today",
+      value: securityMetrics.threatsToday,
+      icon: AlertTriangle,
+      tone: "text-danger",
+    },
+    {
+      label: "Defenses Triggered",
+      value: securityMetrics.defensesTriggered,
+      icon: Shield,
+      tone: "text-safe",
+    },
+    {
+      label: "Wallets Monitored",
+      value: securityMetrics.monitoredWallets,
+      icon: Users,
+      tone: "text-accent",
+    },
+    {
+      label: "System Status",
+      value: securityMetrics.systemStatus,
+      icon: Cpu,
+      tone: "text-primary",
+    },
+  ];
+
   const connectWallet = async () => {
     if (!window.ethereum) {
       alert("MetaMask not installed");
@@ -95,39 +122,39 @@ export default function Dashboard() {
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="relative rounded-3xl bg-slate-900/70 border border-slate-700/70 shadow-glow overflow-hidden px-6 py-5 flex flex-col md:flex-row md:items-center gap-6 pointer-events-auto"
+        className="rounded-xl bg-card border border-border shadow-lg px-6 py-5 flex flex-col lg:flex-row lg:items-center gap-6"
       >
-        <div className="space-y-3 md:flex-1">
-          <div className="inline-flex items-center gap-2 text-[11px] px-2 py-1 rounded-full bg-slate-800/80 border border-slate-700/80 text-highlight">
+        <div className="space-y-3 flex-1">
+          <div className="inline-flex items-center gap-2 text-[11px] px-3 py-1 rounded-full bg-[#0B0F19] border border-border text-accent">
             <Cpu className="w-3 h-3" />
             <span>On-chain AI Security Layer</span>
           </div>
           <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
             Security Operations Dashboard
           </h1>
-          <p className="text-slate-300 max-w-xl text-xs md:text-sm">
-            Monitor live risk signals, track automated defenses, and explore
-            how AegisDot protects wallets from malicious approvals.
+          <p className="text-slate-300 max-w-xl text-sm">
+            Monitor live risk signals, track automated defenses, and explore how
+            AegisDot protects wallets from malicious approvals.
           </p>
         </div>
-        <div className="md:w-72 flex flex-col gap-3 items-center justify-center text-xs">
+        <div className="lg:w-80 flex flex-col gap-3 text-xs">
           <button
             onClick={connectWallet}
-            className="bg-purple-600 text-white px-4 py-2 rounded-lg"
+            className="bg-primary text-white px-4 py-2 rounded-xl font-semibold"
           >
             {account
               ? `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`
               : "Connect Wallet"}
           </button>
-          <div className="rounded-2xl bg-slate-950/80 border border-slate-700/80 px-4 py-3 w-full space-y-1">
-            <div className="flex items-center gap-2 text-highlight">
+          <div className="rounded-xl bg-[#0B0F19] border border-border px-4 py-3 space-y-1">
+            <div className="flex items-center gap-2 text-accent">
               <ShieldCheck className="w-4 h-4" />
               <span className="font-semibold">Defense Pipeline</span>
             </div>
             <p className="text-slate-300 mt-1">
               Risk Engine → RiskRegistry → DefenseExecutor → GuardianVault.
             </p>
-            <div className="mt-2 text-[11px] text-slate-300">
+            <div className="mt-2 text-[11px] text-slate-400">
               <p>Network: Polkadot Hub Testnet</p>
               <p>Native Asset: PAS</p>
             </div>
@@ -135,27 +162,53 @@ export default function Dashboard() {
         </div>
       </motion.section>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {topStats.map((stat) => (
+          <div
+            key={stat.label}
+            className="rounded-xl bg-card border border-border shadow-lg p-4 flex items-center justify-between"
+          >
+            <div>
+              <p className="text-[11px] uppercase tracking-wide text-slate-400">
+                {stat.label}
+              </p>
+              <p className="text-2xl font-semibold text-slate-50 font-mono">
+                {stat.value}
+              </p>
+            </div>
+            <div className={`h-10 w-10 rounded-xl bg-[#0B0F19] border border-border flex items-center justify-center ${stat.tone}`}>
+              <stat.icon className="w-5 h-5" />
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section className="rounded-3xl bg-slate-900/80 border border-slate-700/70 p-5 space-y-4">
+        <section className="rounded-xl bg-card border border-border shadow-lg p-6 space-y-4">
           <header className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-slate-50">Threat Feed</h2>
-              <p className="text-xs text-slate-400">Latest anomalies detected by the risk engine.</p>
+              <p className="text-xs text-slate-400">
+                Latest anomalies detected by the risk engine.
+              </p>
             </div>
             <span className="text-[11px] text-slate-400">Updated ~15s ago</span>
           </header>
           <div className="space-y-3">
             {threatFeed.map((threat) => (
-              <div key={`${threat.wallet}-${threat.contract}`} className="rounded-2xl border border-slate-700/70 bg-slate-950/70 px-4 py-3">
+              <div
+                key={`${threat.wallet}-${threat.contract}`}
+                className="rounded-xl border border-border bg-[#0B0F19] px-4 py-3"
+              >
                 <div className="flex items-center justify-between text-xs mb-1">
                   <span className="text-slate-300">{threat.note}</span>
                   <span
                     className={`px-2 py-0.5 rounded-full font-semibold ${
                       threat.risk === "HIGH"
-                        ? "text-red-200 bg-red-500/20"
+                        ? "text-danger bg-danger/10 animate-pulse"
                         : threat.risk === "MEDIUM"
-                        ? "text-amber-200 bg-amber-500/20"
-                        : "text-emerald-200 bg-emerald-500/20"
+                        ? "text-warning bg-warning/10"
+                        : "text-safe bg-safe/10"
                     }`}
                   >
                     {threat.risk}
@@ -172,27 +225,35 @@ export default function Dashboard() {
 
         <NetworkStatus />
 
-        <section className="rounded-3xl bg-slate-900/80 border border-slate-700/70 p-5 space-y-4">
+        <section className="rounded-xl bg-card border border-border shadow-lg p-6 space-y-4">
           <header>
             <h2 className="text-lg font-semibold text-slate-50">Security Status</h2>
-            <p className="text-xs text-slate-400">Overall posture of the monitoring system.</p>
+            <p className="text-xs text-slate-400">
+              Overall posture of the monitoring system.
+            </p>
           </header>
           <div className="grid grid-cols-2 gap-4 text-center">
-            <div className="rounded-2xl bg-slate-950/70 border border-slate-800/70 px-3 py-4">
+            <div className="rounded-xl bg-[#0B0F19] border border-border px-3 py-4">
               <p className="text-xs text-slate-400 uppercase tracking-wide">Threats Today</p>
-              <p className="text-2xl font-semibold text-slate-50">{securityMetrics.threatsToday}</p>
+              <p className="text-2xl font-semibold text-slate-50 font-mono">
+                {securityMetrics.threatsToday}
+              </p>
             </div>
-            <div className="rounded-2xl bg-slate-950/70 border border-slate-800/70 px-3 py-4">
+            <div className="rounded-xl bg-[#0B0F19] border border-border px-3 py-4">
               <p className="text-xs text-slate-400 uppercase tracking-wide">Defenses</p>
-              <p className="text-2xl font-semibold text-slate-50">{securityMetrics.defensesTriggered}</p>
+              <p className="text-2xl font-semibold text-slate-50 font-mono">
+                {securityMetrics.defensesTriggered}
+              </p>
             </div>
-            <div className="rounded-2xl bg-slate-950/70 border border-slate-800/70 px-3 py-4">
+            <div className="rounded-xl bg-[#0B0F19] border border-border px-3 py-4">
               <p className="text-xs text-slate-400 uppercase tracking-wide">Wallets</p>
-              <p className="text-2xl font-semibold text-slate-50">{securityMetrics.monitoredWallets}</p>
+              <p className="text-2xl font-semibold text-slate-50 font-mono">
+                {securityMetrics.monitoredWallets}
+              </p>
             </div>
-            <div className="rounded-2xl bg-slate-950/70 border border-slate-800/70 px-3 py-4">
+            <div className="rounded-xl bg-[#0B0F19] border border-border px-3 py-4">
               <p className="text-xs text-slate-400 uppercase tracking-wide">System</p>
-              <p className="text-xl font-semibold text-emerald-300">{securityMetrics.systemStatus}</p>
+              <p className="text-xl font-semibold text-safe">{securityMetrics.systemStatus}</p>
             </div>
           </div>
         </section>

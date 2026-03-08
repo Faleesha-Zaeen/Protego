@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Navbar from "./components/Navbar.jsx";
+import Sidebar from "./components/Sidebar.jsx";
+import TopHeader from "./components/TopHeader.jsx";
 import Home from "./pages/Home.jsx";
 import DashboardPage from "./pages/Dashboard.jsx";
 import AnalyzerPage from "./pages/Analyzer.jsx";
@@ -7,10 +8,11 @@ import ArchitecturePage from "./pages/Architecture.jsx";
 
 function App() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900 text-slate-50">
-      <Navbar />
-      <main className="pt-16 px-4 pb-10">
-        <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen text-slate-50">
+      <Sidebar />
+      <div className="min-h-screen md:pl-[72px]">
+        <TopHeader />
+        <main className="px-5 py-6 lg:px-10">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<DashboardPage />} />
@@ -18,8 +20,8 @@ function App() {
             <Route path="/architecture" element={<ArchitecturePage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

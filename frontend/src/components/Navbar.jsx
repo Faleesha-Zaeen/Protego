@@ -6,10 +6,10 @@ const baseLink =
 
 export default function Navbar() {
   return (
-    <header className="fixed top-0 inset-x-0 z-40 bg-slate-950/80 backdrop-blur border-b border-slate-800/70">
+    <header className="fixed top-0 inset-x-0 z-40 bg-[#0B0F19]/90 backdrop-blur border-b border-border/80">
       <nav className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-highlight to-sky-500 text-slate-950 shadow-glow">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-slate-950 shadow-glow">
             <Shield className="w-4 h-4" />
           </div>
           <div className="leading-tight">
@@ -25,8 +25,8 @@ export default function Navbar() {
             className={({ isActive }) =>
               `${baseLink} ${
                 isActive
-                  ? "bg-slate-800 text-highlight border-slate-600"
-                  : "hover:bg-slate-900/80"
+                  ? "bg-card text-accent border-primary/60"
+                  : "hover:bg-card/70"
               }`
             }
             end
@@ -38,8 +38,8 @@ export default function Navbar() {
             className={({ isActive }) =>
               `${baseLink} ${
                 isActive
-                  ? "bg-slate-800 text-highlight border-slate-600"
-                  : "hover:bg-slate-900/80"
+                  ? "bg-card text-accent border-primary/60"
+                  : "hover:bg-card/70"
               }`
             }
           >
@@ -50,8 +50,8 @@ export default function Navbar() {
             className={({ isActive }) =>
               `${baseLink} ${
                 isActive
-                  ? "bg-slate-800 text-highlight border-slate-600"
-                  : "hover:bg-slate-900/80"
+                  ? "bg-card text-accent border-primary/60"
+                  : "hover:bg-card/70"
               }`
             }
           >
@@ -62,14 +62,14 @@ export default function Navbar() {
             className={({ isActive }) =>
               `${baseLink} ${
                 isActive
-                  ? "bg-slate-800 text-highlight border-slate-600"
-                  : "hover:bg-slate-900/80"
+                  ? "bg-card text-accent border-primary/60"
+                  : "hover:bg-card/70"
               }`
             }
           >
             Architecture
           </NavLink>
-          <span className="ml-3 px-3 py-1 rounded-full text-[10px] bg-purple-900/40 border border-purple-500/60 text-purple-200">
+          <span className="ml-3 px-3 py-1 rounded-full text-[10px] bg-card/70 border border-border text-slate-200">
             Web3 Security 
             
             

@@ -74,7 +74,7 @@ export default function AttackSimulator({
         onClick={handleSimulate}
         disabled={loading}
         whileTap={{ scale: 0.96 }}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-semibold shadow-glow disabled:opacity-60"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-warning to-amber-500 text-slate-900 font-semibold shadow-glow disabled:opacity-60"
       >
         {loading ? (
           <ShieldCheck className="w-4 h-4 animate-pulse" />
@@ -84,13 +84,13 @@ export default function AttackSimulator({
         {loading ? "Running attack simulation..." : "⚡ Simulate Malicious Transaction"}
       </motion.button>
       {defenseTx && (
-        <div className="mt-4 text-sm text-green-400">
+        <div className="mt-4 text-sm text-safe">
           Defense confirmed on-chain.
           <a
             href={`https://blockscout-testnet.polkadot.io/tx/${defenseTx}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-2 underline text-blue-400 hover:text-blue-300"
+            className="ml-2 underline text-accent hover:text-accent/80"
           >
             View transaction 
           </a>

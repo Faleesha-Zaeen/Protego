@@ -1,4 +1,4 @@
-import { ArrowDown } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const stages = [
   {
@@ -26,11 +26,6 @@ const stages = [
       "Cargo-powered scoring module that outputs deterministic risk flags for each transaction.",
   },
   {
-    title: "PolkaVM Layer",
-    description:
-      "Planned runtime hook where the same Rust logic can run natively inside Polkadot.",
-  },
-  {
     title: "RiskRegistry",
     description: "On-chain ledger that stores the latest score and enforcement status per wallet.",
   },
@@ -47,35 +42,32 @@ const stages = [
     title: "Polkadot Hub",
     description: "Execution environment providing RPC, consensus, and security guarantees.",
   },
-  {
-    title: "XCM Monitoring",
-    description:
-      "Observability layer for cross-chain intents so that risky transfers can be blocked upstream.",
-  },
 ];
 
 export default function PipelineDiagram() {
   return (
-    <div className="bg-slate-900/80 border border-slate-700/70 rounded-3xl p-6 md:p-8 space-y-4">
+    <div className="bg-card border border-border rounded-xl shadow-lg p-6 md:p-8 space-y-4">
       <h2 className="text-lg font-semibold text-slate-50 mb-2">System Pipeline</h2>
-      <p className="text-sm text-slate-300 mb-4 max-w-xl">
+      <p className="text-sm text-slate-300 mb-4 max-w-2xl">
         Visual overview of how a transaction flows through AegisDot before any
         user signs: from risk scoring to on-chain defense.
       </p>
-      <div className="flex flex-col items-center gap-3">
-        {stages.map((stage, index) => (
-          <div key={stage.title} className="flex flex-col items-center gap-2">
-            <div className="w-64 md:w-80 rounded-2xl bg-slate-950/80 border border-slate-700/70 px-4 py-3 text-center shadow-glow/40">
-              <div className="text-sm font-semibold text-highlight mb-1">
-                {stage.title}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          {stages.map((stage, index) => (
+            <div key={stage.title} className="flex items-center gap-3">
+              <div className="w-56 rounded-xl bg-[#0B0F19] border border-border px-4 py-3 text-center">
+                <div className="text-sm font-semibold text-accent mb-1">
+                  {stage.title}
+                </div>
+                <p className="text-[11px] text-slate-300">{stage.description}</p>
               </div>
-              <p className="text-[11px] text-slate-300">{stage.description}</p>
+              {index < stages.length - 1 && (
+                <ArrowRight className="w-4 h-4 text-slate-500" />
+              )}
             </div>
-            {index < stages.length - 1 && (
-              <ArrowDown className="w-4 h-4 text-slate-500" />
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

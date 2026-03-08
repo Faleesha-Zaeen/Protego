@@ -4,9 +4,9 @@ import { ethers } from "ethers";
 const POLKADOT_HUB_RPC = "https://eth-rpc-testnet.polkadot.io/";
 
 const statusColor = {
-  Connected: "text-emerald-200 bg-emerald-500/20",
-  Connecting: "text-amber-200 bg-amber-500/20",
-  Error: "text-red-200 bg-red-500/20",
+  Connected: "text-safe bg-safe/10",
+  Connecting: "text-warning bg-warning/10",
+  Error: "text-danger bg-danger/10",
 };
 
 export default function NetworkStatus() {
@@ -58,7 +58,7 @@ export default function NetworkStatus() {
   );
 
   return (
-    <section className="rounded-3xl bg-slate-900/80 border border-slate-700/70 p-5 space-y-4">
+    <section className="rounded-xl bg-card border border-border shadow-lg p-6 space-y-4">
       <header className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-slate-50">
@@ -73,11 +73,11 @@ export default function NetworkStatus() {
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
           <p className="text-xs text-slate-400">Latest Block</p>
-          <p className="text-slate-100 font-semibold">{blockNumber}</p>
+          <p className="text-slate-100 font-semibold font-mono">{blockNumber}</p>
         </div>
         <div>
           <p className="text-xs text-slate-400">Chain ID</p>
-          <p className="text-slate-100 font-semibold">{chainId}</p>
+          <p className="text-slate-100 font-semibold font-mono">{chainId}</p>
         </div>
         <div>
           <p className="text-xs text-slate-400">RPC Status</p>

@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 const levelColors = {
   LOW: "from-safe to-emerald-500",
-  MEDIUM: "from-yellow-400 to-amber-500",
+  MEDIUM: "from-warning to-amber-500",
   HIGH: "from-danger to-rose-600",
 };
 
@@ -16,11 +16,11 @@ export default function RiskGauge({ score, level }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between text-sm text-slate-300">
         <span>Risk Score</span>
-        <span className="font-semibold">
+        <span className="font-semibold font-mono">
           {safeScore ?? "-"} {level && `(${level})`}
         </span>
       </div>
-      <div className="h-3 w-full rounded-full bg-slate-800 overflow-hidden shadow-inner">
+      <div className="h-3 w-full rounded-full bg-[#0B0F19] border border-border overflow-hidden shadow-inner">
         <motion.div
           className={`h-full bg-gradient-to-r ${colorClass} shadow-glow`}
           initial={{ width: 0 }}

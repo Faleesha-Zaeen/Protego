@@ -178,10 +178,10 @@ export default function TransactionAnalyzer() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-6 items-start">
       <div className="space-y-4">
-        <div className="bg-card/80 border border-slate-700/70 rounded-2xl p-5 space-y-4">
+        <div className="bg-card border border-border rounded-xl shadow-lg p-6 space-y-4">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-highlight" />
+              <Activity className="w-4 h-4 text-accent" />
               <h2 className="text-sm font-semibold text-slate-100">
                 Transaction Analyzer
               </h2>
@@ -196,9 +196,9 @@ export default function TransactionAnalyzer() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
             <div className="space-y-1">
-              <label className="text-slate-400 text-xs">Wallet Address</label>
+                <label className="text-slate-400 text-xs">Wallet Address</label>
               <input
-                className="w-full rounded-xl bg-slate-900/80 border border-slate-700/70 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-highlight/70"
+                className="w-full rounded-xl bg-[#0B0F19] border border-border px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/70"
                 value={walletAddress}
                 onChange={(e) => setWalletAddress(e.target.value)}
               />
@@ -206,7 +206,7 @@ export default function TransactionAnalyzer() {
             <div className="space-y-1 md:col-span-2">
               <label className="text-slate-400 text-xs">Contract Address</label>
               <input
-                className="w-full rounded-xl bg-slate-900/80 border border-slate-700/70 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-highlight/70"
+                className="w-full rounded-xl bg-[#0B0F19] border border-border px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/70"
                 value={contractAddress}
                 onChange={(e) => setContractAddress(e.target.value)}
               />
@@ -219,7 +219,7 @@ export default function TransactionAnalyzer() {
                 type="number"
                 min="0"
                 step="0.01"
-                className="w-full rounded-xl bg-slate-900/80 border border-slate-700/70 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-highlight/70"
+                className="w-full rounded-xl bg-[#0B0F19] border border-border px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/70"
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
               />
@@ -231,14 +231,14 @@ export default function TransactionAnalyzer() {
               whileTap={{ scale: 0.97 }}
               onClick={() => handleAnalyze()}
               disabled={loading}
-              className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-highlight text-slate-900 text-sm font-semibold shadow-glow disabled:opacity-60"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold shadow-glow disabled:opacity-60"
             >
               {loading ? "Analyzing..." : "Analyze Transaction"}
             </motion.button>
           </div>
         </div>
 
-        <div className="bg-card/80 border border-slate-700/70 rounded-2xl p-5 grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+        <div className="bg-card border border-border rounded-xl shadow-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
           <RiskGauge score={riskScore} level={riskLevel} />
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2 text-slate-100 text-sm">
@@ -272,9 +272,9 @@ export default function TransactionAnalyzer() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-card/80 border border-slate-700/70 rounded-2xl p-5 space-y-3">
+          <div className="bg-card border border-border rounded-xl shadow-lg p-6 space-y-3">
             <div className="flex items-center gap-2 text-slate-100">
-              <ShieldCheck className="w-4 h-4 text-highlight" />
+              <ShieldCheck className="w-4 h-4 text-accent" />
               <h3 className="text-sm font-semibold">Decoded Transaction</h3>
             </div>
             <div className="text-xs text-slate-300 space-y-2">
@@ -312,7 +312,7 @@ export default function TransactionAnalyzer() {
             </div>
           </div>
 
-          <div className="bg-card/80 border border-slate-700/70 rounded-2xl p-5 space-y-3">
+            <div className="bg-card border border-border rounded-xl shadow-lg p-6 space-y-3">
             <div className="flex items-center gap-2 text-slate-100">
               <AlertTriangle className="w-4 h-4 text-danger" />
               <h3 className="text-sm font-semibold">Security Flags</h3>
@@ -322,7 +322,7 @@ export default function TransactionAnalyzer() {
                 {securityFlags.map((flag) => (
                   <li
                     key={flag}
-                    className="flex items-center gap-2 rounded-xl bg-slate-950/70 border border-slate-700/70 px-3 py-2"
+                    className="flex items-center gap-2 rounded-xl bg-[#0B0F19] border border-border px-3 py-2"
                   >
                     <span className="text-danger">⚠</span>
                     <span>{flag}</span>
@@ -335,7 +335,7 @@ export default function TransactionAnalyzer() {
           </div>
         </div>
 
-        <div className="bg-card/80 border border-slate-700/70 rounded-2xl p-5 space-y-4">
+        <div className="bg-card border border-border rounded-xl shadow-lg p-6 space-y-4">
           <div className="space-y-1">
             <h3 className="text-sm font-semibold text-slate-100">Attack Simulation</h3>
             <p className="text-xs text-slate-400">
@@ -349,7 +349,7 @@ export default function TransactionAnalyzer() {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => runAttackPreset(preset)}
                 disabled={loading}
-                className="rounded-2xl border border-slate-700/70 bg-slate-950/70 px-4 py-3 text-left text-sm text-slate-100 hover:border-highlight/70 hover:bg-slate-900/80 transition-colors disabled:opacity-60"
+                className="rounded-xl border border-border bg-[#0B0F19] px-4 py-3 text-left text-sm text-slate-100 hover:border-primary/70 hover:bg-card/80 transition-colors disabled:opacity-60"
               >
                 <p className="font-semibold">{preset.name}</p>
                 <p className="text-[11px] text-slate-400 mt-1">
