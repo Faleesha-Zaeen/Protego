@@ -5,6 +5,7 @@ import NetworkStatus from "./NetworkStatus.jsx";
 import RuntimeStatus from "./RuntimeStatus.jsx";
 import DefenseEventsFeed from "./DefenseEventsFeed.jsx";
 import XcmMonitor from "./XcmMonitor.jsx";
+import XcmThreatAlerts from "./XcmThreatAlerts.jsx";
 import RiskEngineStatus from "./RiskEngineStatus.jsx";
 import AIModelStatus from "./AIModelStatus.jsx";
 
@@ -197,9 +198,10 @@ export default function Dashboard() {
         </section>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
         <RuntimeStatus />
         <XcmMonitor />
+        <XcmThreatAlerts />
         <RiskEngineStatus />
         <AIModelStatus />
       </div>

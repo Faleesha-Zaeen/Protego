@@ -10,6 +10,7 @@ const riskEngine = require('./services/riskEngine');
 const analyzeRouterFactory = require('./routes/analyze');
 const simulateAttackRouterFactory = require('./routes/simulateAttack');
 const defenseEventsRouter = require('./routes/defenseEvents');
+const xcmRouter = require('./routes/xcm');
 
 const app = express();
 
@@ -31,6 +32,9 @@ app.use('/api/simulate-attack', simulateAttackRouterFactory(riskEngine));
 
 // Expose defense events feed
 app.use(defenseEventsRouter);
+
+// Expose XCM monitor feed
+app.use(xcmRouter);
 
 // Server configuration
 const PORT = process.env.PORT || 5000;
