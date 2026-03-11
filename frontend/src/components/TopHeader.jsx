@@ -1,12 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { Home, LayoutDashboard, Search, Workflow } from "lucide-react";
+import { Home, LayoutDashboard, Search } from "lucide-react";
 import WalletConnect from "./WalletConnect.jsx";
 
 const mobileLinks = [
   { to: "/", label: "Home", icon: Home },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/analyzer", label: "Analyzer", icon: Search },
-  { to: "/architecture", label: "Architecture", icon: Workflow },
 ];
 
 export default function TopHeader() {
@@ -16,7 +15,7 @@ export default function TopHeader() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-slate-400">Project</p>
-            <h1 className="text-lg font-semibold text-slate-50">AegisDot</h1>
+            <h1 className="text-lg font-semibold text-slate-50">Protego</h1>
           </div>
           <div className="flex items-center gap-3">
             <span className="hidden sm:inline-flex items-center gap-2 rounded-full border border-border/80 bg-card/70 px-3 py-1 text-xs text-slate-200">

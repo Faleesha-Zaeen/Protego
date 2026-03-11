@@ -13,7 +13,7 @@ export default function Navbar() {
             <Shield className="w-4 h-4" />
           </div>
           <div className="leading-tight">
-            <div className="font-semibold text-sm">AegisDot</div>
+            <div className="font-semibold text-sm">Protego</div>
             <div className="text-[10px] text-slate-400">
               On-chain AI Security Layer
             </div>
@@ -56,18 +56,6 @@ export default function Navbar() {
             }
           >
             Analyzer
-          </NavLink>
-          <NavLink
-            to="/architecture"
-            className={({ isActive }) =>
-              `${baseLink} ${
-                isActive
-                  ? "bg-card text-accent border-primary/60"
-                  : "hover:bg-card/70"
-              }`
-            }
-          >
-            Architecture
           </NavLink>
           <span className="ml-3 px-3 py-1 rounded-full text-[10px] bg-card/70 border border-border text-slate-200">
             Web3 Security 

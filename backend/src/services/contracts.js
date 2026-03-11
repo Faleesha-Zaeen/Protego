@@ -1,4 +1,4 @@
-// Contract integration layer for AegisDot backend
+// Contract integration layer for Protego backend
 // Connects to GuardianVault, RiskRegistry, and DefenseExecutor using ethers.js
 
 const path = require('path');

@@ -1,4 +1,4 @@
-// Blockchain service abstraction for AegisDot
+// Blockchain service abstraction for Protego
 // Adds basic calldata decoding to detect ERC20 approve calls.
 
 const { ethers } = require('ethers');

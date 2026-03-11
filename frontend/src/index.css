@@ -2,13 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap");
 
 body {
   @apply bg-background text-slate-100 antialiased;
-  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 40px 40px;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.02em;
+}
+
+.mono-text,
+code,
+pre {
+  font-family: "JetBrains Mono", monospace;
 }

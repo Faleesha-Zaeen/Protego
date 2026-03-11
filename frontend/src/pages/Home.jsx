@@ -9,25 +9,17 @@ export default function Home() {
             Web3 Security · Polkadot
           </p>
           <h1 className="text-3xl md:text-5xl font-semibold leading-tight">
-            AegisDot – On-chain AI Security Layer
+            Protego — AI Security Firewall for Web3
           </h1>
           <p className="text-sm md:text-base text-slate-300 max-w-xl">
-            Analyze transactions and detect malicious smart contract interactions
-            before users sign. AegisDot plugs into your dApp as a pre-signature
-            security firewall.
+            Protect your wallet before transactions are signed.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
               to="/dashboard"
               className="px-5 py-3 rounded-xl bg-primary text-white text-sm font-semibold shadow-glow"
             >
-              Open Security Dashboard
-            </Link>
-            <Link
-              to="/architecture"
-              className="px-5 py-3 rounded-xl border border-border text-sm text-slate-200 hover:bg-card/70"
-            >
-              View System Architecture
+              Launch Protection Dashboard
             </Link>
           </div>
           <div className="flex flex-wrap gap-3 text-xs text-slate-300">
@@ -43,25 +35,18 @@ export default function Home() {
           </div>
         </div>
         <div className="rounded-xl bg-card border border-border shadow-lg p-6 space-y-4">
-          <h2 className="text-sm font-semibold text-slate-100">Why AegisDot?</h2>
-          <p className="text-sm text-slate-300">
-            Wallets sign opaque calldata every day. AegisDot inspects the intent
-            of a transaction before it reaches the chain, flags risky approvals,
-            and can trigger on-chain actions to protect funds.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-200">
+          <h2 className="text-sm font-semibold text-slate-100">Why Protego?</h2>
+          <div className="space-y-4 text-sm text-slate-200">
             <div className="rounded-xl bg-[#0B0F19] border border-border p-4">
               <p className="text-[11px] uppercase tracking-wide text-slate-400">Problem</p>
               <p className="mt-2">
-                Users unknowingly grant unlimited approvals or interact with
-                malicious contracts.
+                Users blindly sign transactions and approve malicious contracts.
               </p>
             </div>
             <div className="rounded-xl bg-[#0B0F19] border border-border p-4">
               <p className="text-[11px] uppercase tracking-wide text-slate-400">Solution</p>
               <p className="mt-2">
-                AI-powered risk engine analyzes transactions before signing and
-                triggers defenses.
+                Protego analyzes transactions before signature and blocks threats.
               </p>
             </div>
           </div>
@@ -76,7 +61,7 @@ export default function Home() {
               "Users approve tokens and interact with contracts they barely understand. Once signed, these operations are irreversible.",
           },
           {
-            title: "How AegisDot works",
+            title: "How Protego works",
             body:
               "A backend risk engine inspects calldata and metadata, writes risk scores to a registry, and triggers a defense executor when thresholds are breached.",
           },

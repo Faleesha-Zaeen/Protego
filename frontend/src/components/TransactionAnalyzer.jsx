@@ -8,6 +8,65 @@ import AttackSimulator from "./AttackSimulator.jsx";
 import { analyzeTransaction } from "../api/backend";
 
 let logId = 0;
+const LAST_TRANSACTION_STORAGE_KEY = "aegisdot:last-transaction";
+const LAST_TRANSACTION_EVENT = "aegisdot:last-transaction";
+const ANALYSIS_COUNT_KEY = "aegisdot:analysis-count";
+
+function incrementAnalysisCountStorage() {
+  if (typeof window === "undefined") {
+    return;
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  let nextCount = 1;
+  try {
+    const raw = window.localStorage?.getItem(ANALYSIS_COUNT_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.date === today) {
+        nextCount = (Number(parsed.count) || 0) + 1;
+      }
+    }
+    window.localStorage?.setItem(
+      ANALYSIS_COUNT_KEY,
+      JSON.stringify({ date: today, count: nextCount })
+    );
+  } catch (err) {
+    console.error("Failed to update analysis count", err);
+  }
+}
+
+function persistLastTransaction(tx, result) {
+  if (typeof window === "undefined" || !tx || !result) {
+    return;
+  }
+
+  const payload = {
+    walletAddress: tx.walletAddress,
+    contractAddress: tx.contractAddress,
+    method: tx.method,
+    value: Number(tx.value) || 0,
+    unlimitedApproval: tx.unlimitedApproval,
+    riskScore: result.riskScore ?? null,
+    riskLevel: result.riskLevel ?? null,
+    explanation: result.explanation ?? "",
+    defenseTriggered: Boolean(result.defenseTriggered || result.riskLevel === "HIGH"),
+    timestamp: Date.now(),
+  };
+
+  try {
+    window.localStorage?.setItem(LAST_TRANSACTION_STORAGE_KEY, JSON.stringify(payload));
+  } catch (err) {
+    console.error("Failed to persist last transaction", err);
+  }
+
+  incrementAnalysisCountStorage();
+
+  try {
+    window.dispatchEvent(new CustomEvent(LAST_TRANSACTION_EVENT, { detail: payload }));
+  } catch (err) {
+    console.error("Failed to dispatch last transaction event", err);
+  }
+}
 
 export default function TransactionAnalyzer() {
   const [walletAddress, setWalletAddress] = useState("0xUser123");
@@ -149,6 +208,7 @@ export default function TransactionAnalyzer() {
       setRiskScore(data.riskScore);
       setRiskLevel(data.riskLevel);
       setExplanation(data.explanation);
+      persistLastTransaction(payload, data);
       pushLog(`Risk analysis complete: score ${data.riskScore} (${data.riskLevel}).`);
       if (data.riskLevel === "HIGH") {
         pushLog("Backend may trigger on-chain defense for this wallet.");
@@ -166,6 +226,18 @@ export default function TransactionAnalyzer() {
     setRiskLevel(data.riskLevel);
     setExplanation(data.explanation);
     setDefenseTriggered(Boolean(data.defenseTriggered));
+    if (data?.transaction) {
+      persistLastTransaction(
+        {
+          walletAddress: data.transaction.walletAddress,
+          contractAddress: data.transaction.contractAddress,
+          method: data.transaction.method,
+          value: data.transaction.value,
+          unlimitedApproval: data.transaction.unlimitedApproval,
+        },
+        data
+      );
+    }
   }
 
   function runAttackPreset(preset) {

@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title RiskRegistry
-/// @notice Stores risk scores for wallets detected by the AegisDot backend.
+/// @notice Stores risk scores for wallets detected by the Protego backend.
 contract RiskRegistry is Ownable {
     mapping(address => uint256) public riskScores;
 

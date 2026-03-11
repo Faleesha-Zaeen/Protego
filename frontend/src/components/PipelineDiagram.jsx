@@ -6,7 +6,7 @@ const stages = [
     description: "Origin point where the user initiates an approval or transfer.",
   },
   {
-    title: "AegisDot Analyzer",
+    title: "Protego Analyzer",
     description:
       "Surfaces pre-sign insights and streams transactions into the analyzer.",
   },
@@ -49,7 +49,7 @@ export default function PipelineDiagram() {
     <div className="bg-card border border-border rounded-xl shadow-lg p-6 md:p-8 space-y-4">
       <h2 className="text-lg font-semibold text-slate-50 mb-2">System Pipeline</h2>
       <p className="text-sm text-slate-300 mb-4 max-w-2xl">
-        Visual overview of how a transaction flows through AegisDot before any
+        Visual overview of how a transaction flows through Protego before any
         user signs: from risk scoring to on-chain defense.
       </p>
       <div className="flex flex-col gap-4">

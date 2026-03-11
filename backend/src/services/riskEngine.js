@@ -1,4 +1,4 @@
-// Risk analysis engine for AegisDot
+// Risk analysis engine for Protego
 // Delegates core scoring to the Rust risk engine for better parity with on-chain logic.
 
 const path = require('path');
@@ -274,10 +274,10 @@ async function analyzeTransaction(tx) {
 
   if (riskLevel === 'HIGH' && tx && tx.walletAddress) {
     try {
-      console.log('AegisDot updating risk score on-chain...');
+      console.log('Protego updating risk score on-chain...');
       await updateRiskScore(tx.walletAddress, score);
 
-      console.log('AegisDot triggering defense executor...');
+      console.log('Protego triggering defense executor...');
       const defenseReceipt = await callDefense(tx.walletAddress);
 
       const defenseTxHash = defenseReceipt?.transactionHash || defenseReceipt?.hash;
@@ -292,7 +292,7 @@ async function analyzeTransaction(tx) {
         console.warn('Defense receipt missing transaction hash; event not recorded.');
       }
     } catch (err) {
-      console.error('AegisDot on-chain defense failed:', err);
+      console.error('Protego on-chain defense failed:', err);
     }
   }
 

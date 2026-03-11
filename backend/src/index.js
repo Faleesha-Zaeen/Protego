@@ -20,7 +20,7 @@ app.use(express.json());
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'AegisDot Backend' });
+  res.json({ status: 'ok', service: 'Protego Backend' });
 });
 
 // Routes
@@ -41,7 +41,7 @@ const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
   // Basic startup log; keep it simple for now
-  console.log(`AegisDot backend running on port ${PORT}`);
+  console.log(`Protego backend running on port ${PORT}`);
 });
 
 // Export server configuration for testing or external control

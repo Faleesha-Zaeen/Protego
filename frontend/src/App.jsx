@@ -4,7 +4,6 @@ import TopHeader from "./components/TopHeader.jsx";
 import Home from "./pages/Home.jsx";
 import DashboardPage from "./pages/Dashboard.jsx";
 import AnalyzerPage from "./pages/Analyzer.jsx";
-import ArchitecturePage from "./pages/Architecture.jsx";
 
 function App() {
   return (
@@ -17,7 +16,6 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/analyzer" element={<AnalyzerPage />} />
-            <Route path="/architecture" element={<ArchitecturePage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

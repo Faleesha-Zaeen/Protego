@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, LayoutDashboard, Search, Workflow } from "lucide-react";
+import { Home, LayoutDashboard, Search } from "lucide-react";
 import WalletConnect from "./WalletConnect.jsx";
 
 const links = [
   { to: "/", label: "Home", icon: Home },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/analyzer", label: "Analyzer", icon: Search },
-  { to: "/architecture", label: "Architecture", icon: Workflow },
 ];
 
 export default function Sidebar() {
@@ -34,7 +33,7 @@ export default function Sidebar() {
               exit={{ opacity: 0, x: -10 }}
               className="overflow-hidden"
             >
-              <p className="text-sm font-semibold text-slate-50">AegisDot</p>
+              <p className="text-sm font-semibold text-slate-50">Protego</p>
               <p className="text-[11px] text-slate-400">Web3 Security Console</p>
             </motion.div>
           )}

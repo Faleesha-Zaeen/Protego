@@ -4,7 +4,7 @@ export default function RiskEngineStatus() {
       <header>
         <h2 className="text-lg font-semibold text-slate-50">Security Engine</h2>
         <p className="text-xs text-slate-400">
-          Snapshot of the hybrid Rust + Polkadot execution path for AegisDot.
+          Snapshot of the hybrid Rust + Polkadot execution path for Protego.
         </p>
       </header>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">

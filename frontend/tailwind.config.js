@@ -17,8 +17,8 @@ export default {
         glow: "0 0 40px rgba(99, 102, 241, 0.35)",
       },
       fontFamily: {
-        sans: ["Space Grotesk", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"],
+        sans: ["Space Grotesk", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
       },
     },
   },

@@ -1,13 +1,13 @@
-# AegisDot
+# Protego – AI Security Firewall for Web3
 
-> “AegisDot is an AI-powered transaction firewall for Web3, protecting wallets and cross-chain activity in real time.”
+> “Protego is an AI-powered transaction firewall for Web3, protecting wallets and cross-chain activity in real time.”
 
-**Tagline:** AI-powered on-chain security layer for wallet transactions and Polkadot cross-chain activity.
+**Tagline:** Protego is the AI-powered on-chain security layer for wallet transactions and Polkadot cross-chain activity.
 
 ---
 
 ## Project Overview
-AegisDot is an autonomous security operations stack that continuously inspects wallet transactions and Polkadot XCM traffic. It blends a Python AI model, a Rust risk engine, and Solidity smart contracts to detect, score, and neutralize threats without human intervention.
+Protego is an autonomous security operations stack that continuously inspects wallet transactions and Polkadot XCM traffic. It blends a Python AI model, a Rust risk engine, and Solidity smart contracts to detect, score, and neutralize threats without human intervention.
 
 ## Key Features
 - AI + Rust hybrid scoring of wallet transactions.
@@ -82,7 +82,7 @@ Dashboard Alerts → DefenseExecutor
 
 ## Project Structure
 ```
-AegisDot/
+Protego/
 ├── contracts/
 ├── backend/
 ├── frontend/
@@ -94,8 +94,8 @@ AegisDot/
 
 ## Installation
 ```bash
-git clone https://github.com/<your-org>/AegisDot.git
-cd AegisDot
+git clone https://github.com/<your-org>/Protego.git
+cd Protego
 
 # Install root dependencies (Hardhat, shared tooling)
 npm install

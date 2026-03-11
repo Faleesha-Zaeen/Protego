@@ -39,7 +39,7 @@ module.exports = function createSimulateAttackRouter(riskEngine) {
 
       if (riskLevel === 'HIGH') {
         response.defenseTriggered = true;
-        response.message = 'AegisDot blocked a malicious approval attempt.';
+        response.message = 'Protego blocked a malicious approval attempt.';
       }
 
       res.json(response);
