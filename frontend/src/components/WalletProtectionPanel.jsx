@@ -1,3 +1,13 @@
+function cleanExplanation(text) {
+  if (!text) return text;
+  return text
+    .replace(/AI model marked this transaction as \w+ risk\.,?\s*/gi, '')
+    .replace(' and Contract', ' Contract')
+    .replace('Contract is unknown.', 'Contract is unverified and unknown.')
+    .replace('Contract address is on the blacklist.', 'Contract address is blacklisted.')
+    .replace('blacklisted..', 'blacklisted.')
+    .trim();
+}
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ShieldCheck, ShieldAlert, Loader2 } from "lucide-react";
@@ -254,7 +264,7 @@ export default function WalletProtectionPanel({
         </div>
         <div className="rounded-xl bg-[#0B0F19] border border-border px-4 py-3 space-y-2">
           <p className="text-[11px] uppercase tracking-wide text-slate-400">Explanation</p>
-          <p className="text-slate-200 text-sm leading-relaxed">{explanation}</p>
+          <p className="text-slate-200 text-sm leading-relaxed">{cleanExplanation(explanation)}</p>
         </div>
       </div>
     </motion.section>

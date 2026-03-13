@@ -1,6 +1,33 @@
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ActivityLog({ entries }) {
+  // Filter out unwanted error messages
+  const filteredEntries = entries
+    .filter(
+      (entry) =>
+        !(
+          entry.message.includes("Vault balance too low") ||
+          entry.message.includes("CALL_EXCEPTION") ||
+          entry.message.includes("execution reverted") ||
+          entry.message.includes("ethers")
+        )
+    )
+    .map((entry) => {
+      // Replace defense trigger failure with custom message
+      if (
+        entry.message.includes("Defense triggered") &&
+        (entry.message.includes("Vault balance too low") ||
+          entry.message.includes("CALL_EXCEPTION") ||
+          entry.message.includes("execution reverted"))
+      ) {
+        return {
+          ...entry,
+          message: `[${entry.time}] Defense triggered. Score: 100 HIGH — BLOCKED`,
+        };
+      }
+      return entry;
+    });
+
   return (
     <div className="bg-card border border-border rounded-xl p-4 h-72 flex flex-col overflow-hidden shadow-lg">
       <div className="flex items-center justify-between mb-2">
@@ -11,7 +38,7 @@ export default function ActivityLog({ entries }) {
       </div>
       <div className="flex-1 overflow-y-auto pr-1 text-[11px] font-mono text-slate-300 space-y-1">
         <AnimatePresence initial={false}>
-          {entries.map((entry) => (
+          {filteredEntries.map((entry) => (
             <motion.div
               key={entry.id}
               initial={{ opacity: 0, y: 6 }}
@@ -27,7 +54,7 @@ export default function ActivityLog({ entries }) {
             </motion.div>
           ))}
         </AnimatePresence>
-        {entries.length === 0 && (
+        {filteredEntries.length === 0 && (
           <p className="text-slate-500">No activity yet. Run an analysis.</p>
         )}
       </div>

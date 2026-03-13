@@ -1,7 +1,24 @@
+function cleanExplanation(text) {
+  if (!text) return text;
+  return text
+    .replace(/AI model marked this transaction as \w+ risk\.,?\s*/gi, '')
+    .replace(' and Contract', ' Contract')
+    .replace('Contract is unknown.', 'Contract is unverified and unknown.')
+    .replace('Contract address is on the blacklist.', 'Contract address is blacklisted.')
+    .replace('blacklisted..', 'blacklisted.')
+    .trim();
+}
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Activity, AlertTriangle, ShieldCheck } from "lucide-react";
-import { Interface, MaxUint256, formatUnits, parseUnits } from "ethers";
+import {
+  BrowserProvider,
+  Contract,
+  Interface,
+  MaxUint256,
+  formatUnits,
+  parseUnits,
+} from "ethers";
 import RiskGauge from "./RiskGauge.jsx";
 import ActivityLog from "./ActivityLog.jsx";
 import AttackSimulator from "./AttackSimulator.jsx";
@@ -80,7 +97,9 @@ export default function TransactionAnalyzer() {
   const [explanation, setExplanation] = useState("");
   const [defenseTriggered, setDefenseTriggered] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [scanLoading, setScanLoading] = useState(false);
   const [logEntries, setLogEntries] = useState([]);
+  const [modalConfig, setModalConfig] = useState(null);
   const attackPresets = useMemo(
     () => [
       {
@@ -189,8 +208,7 @@ export default function TransactionAnalyzer() {
     const effectiveContract = overrides.contractAddress ?? contractAddress;
     const effectiveValue = overrides.value ?? value;
     const effectiveMethod = overrides.method ?? "approve";
-    const effectiveUnlimited =
-      overrides.unlimitedApproval ?? true;
+    const effectiveUnlimited = overrides.unlimitedApproval ?? decodedTx.isUnlimited;
     pushLog(
       `Analyzing transaction${
         overrides.presetName ? ` (${overrides.presetName})` : ""
@@ -218,6 +236,99 @@ export default function TransactionAnalyzer() {
       pushLog("Analysis failed: " + (err.message || "Unknown error"));
     } finally {
       setLoading(false);
+    }
+  }
+
+  function closeModal() {
+    setModalConfig(null);
+  }
+
+  async function sendApproveTransaction({ signer, spender, amount }) {
+    const approveAbi = ["function approve(address spender, uint256 amount)"];
+    const tokenContract = new Contract(contractAddress, approveAbi, signer);
+    const tx = await tokenContract.approve(spender, amount);
+    pushLog("MetaMask transaction submitted. Waiting for confirmation...");
+    const receipt = await tx.wait();
+    if (receipt?.status === 1n || receipt?.status === 1) {
+      pushLog("Approval confirmed on-chain.");
+    } else {
+      pushLog("Approval transaction failed or was reverted.");
+    }
+  }
+
+  async function handleScanBeforeSigning() {
+    if (!window?.ethereum) {
+      pushLog("MetaMask not detected. Please install or enable MetaMask.");
+      return;
+    }
+
+    setScanLoading(true);
+    setDefenseTriggered(false);
+    pushLog("Scanning transaction before signing...");
+
+    try {
+      const provider = new BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = await provider.getSigner();
+      const connectedAddress = await signer.getAddress();
+      setWalletAddress(connectedAddress);
+
+      const payload = {
+        walletAddress: connectedAddress,
+        contractAddress,
+        method: "approve",
+        value: Number(value) || 0,
+        unlimitedApproval: decodedTx.isUnlimited,
+      };
+
+      const data = await analyzeTransaction(payload);
+      setRiskScore(data.riskScore);
+      setRiskLevel(data.riskLevel);
+      setExplanation(data.explanation);
+      persistLastTransaction(payload, data);
+
+      const amount = decodedTx.isUnlimited
+        ? MaxUint256
+        : parseUnits(value || "0", 18);
+
+      if (data.riskScore > 70) {
+        setModalConfig({
+          variant: "blocked",
+          title: "⚠️ PROTEGO BLOCKED THIS TRANSACTION",
+          riskScore: data.riskScore,
+          explanation: data.explanation,
+          onProceed: async () => {
+            closeModal();
+            await sendApproveTransaction({
+              signer,
+              spender: contractAddress,
+              amount,
+            });
+          },
+        });
+        pushLog("High risk detected. Awaiting user confirmation.");
+        return;
+      }
+
+      setModalConfig({
+        variant: "safe",
+        title: "✅ PROTEGO: Transaction Appears Safe",
+        riskScore: data.riskScore,
+        explanation: data.explanation,
+        onProceed: async () => {
+          closeModal();
+        },
+      });
+      await sendApproveTransaction({
+        signer,
+        spender: contractAddress,
+        amount,
+      });
+    } catch (err) {
+      console.error(err);
+      pushLog("Scan failed: " + (err?.message || "Unknown error"));
+    } finally {
+      setScanLoading(false);
     }
   }
 
@@ -299,14 +410,24 @@ export default function TransactionAnalyzer() {
                 Simulation mode uses a malicious unlimited approval to demonstrate defense.
               </p>
             </div>
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => handleAnalyze()}
-              disabled={loading}
-              className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold shadow-glow disabled:opacity-60"
-            >
-              {loading ? "Analyzing..." : "Analyze Transaction"}
-            </motion.button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => handleAnalyze()}
+                disabled={loading}
+                className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold shadow-glow disabled:opacity-60"
+              >
+                {loading ? "Analyzing..." : "Analyze Transaction"}
+              </motion.button>
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={handleScanBeforeSigning}
+                disabled={scanLoading}
+                className="inline-flex items-center justify-center px-4 py-2 rounded-xl border border-emerald-400/40 bg-emerald-500/10 text-emerald-200 text-sm font-semibold shadow-glow disabled:opacity-60"
+              >
+                {scanLoading ? "Scanning..." : "Scan Before Signing"}
+              </motion.button>
+            </div>
           </div>
         </div>
 
@@ -318,7 +439,7 @@ export default function TransactionAnalyzer() {
               <span>Explanation</span>
             </div>
             <p className="text-slate-300 text-xs md:text-sm min-h-[3rem]">
-              {explanation ||
+              {cleanExplanation(explanation) ||
                 "Run an analysis or simulation to see the risk explanation here."}
             </p>
             <div className="mt-2 text-xs text-slate-400">
@@ -437,6 +558,75 @@ export default function TransactionAnalyzer() {
       </div>
 
       <ActivityLog entries={logEntries} />
+
+      {modalConfig && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-xl rounded-3xl border border-white/10 bg-[#0B0F19] p-6 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h3
+                className={`text-lg font-semibold ${
+                  modalConfig.variant === "blocked"
+                    ? "text-red-300"
+                    : "text-emerald-200"
+                }`}
+              >
+                {modalConfig.title}
+              </h3>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="text-xs text-slate-400 hover:text-slate-200"
+              >
+                Close
+              </button>
+            </div>
+            <div className="mt-4 space-y-3 text-sm text-slate-200">
+              <p className="text-slate-300">
+                Risk Score: {modalConfig.riskScore}/100
+              </p>
+              <p className="text-slate-300">Reason: {cleanExplanation(modalConfig.explanation)}</p>
+              {modalConfig.variant === "blocked" ? (
+                <p className="text-slate-400">
+                  This transaction was flagged as HIGH RISK by Protego's AI model
+                  and on-chain PVM risk engine.
+                </p>
+              ) : (
+                <p className="text-slate-400">
+                  Proceed to sign in MetaMask when you're ready.
+                </p>
+              )}
+            </div>
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              {modalConfig.variant === "blocked" ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-100"
+                  >
+                    Block (Recommended)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={modalConfig.onProceed}
+                    className="flex-1 rounded-xl bg-red-500/80 px-4 py-2 text-sm font-semibold text-white"
+                  >
+                    Proceed Anyway
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="rounded-xl bg-emerald-500/80 px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Got it
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

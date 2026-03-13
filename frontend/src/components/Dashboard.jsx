@@ -1,3 +1,13 @@
+function cleanExplanation(text) {
+  if (!text) return text;
+  return text
+    .replace(/AI model marked this transaction as \w+ risk\.,?\s*/gi, '')
+    .replace(' and Contract', ' Contract')
+    .replace('Contract is unknown.', 'Contract is unverified and unknown.')
+    .replace('Contract address is on the blacklist.', 'Contract address is blacklisted.')
+    .replace('blacklisted..', 'blacklisted.')
+    .trim();
+}
 import { useState, useEffect } from "react";
 import DefenseEventsFeed from "./DefenseEventsFeed.jsx";
 import XcmThreatAlerts from "./XcmThreatAlerts.jsx";
@@ -89,6 +99,7 @@ function formatLog(message) {
 }
 
 export default function Dashboard() {
+    const [showAllEvents, setShowAllEvents] = useState(false);
   const [account, setAccount] = useState("");
   const [defenseEvents, setDefenseEvents] = useState([]);
   const [lastTransaction, setLastTransaction] = useState(() => readLastTransactionFromStorage());
@@ -307,7 +318,15 @@ export default function Dashboard() {
         prefillResult={simResult}
       />
 
-      <DefenseEventsFeed events={defenseEvents} />
+      <DefenseEventsFeed events={showAllEvents ? defenseEvents : defenseEvents.slice(0, 3)} />
+      {defenseEvents.length > 3 && (
+        <button
+          onClick={() => setShowAllEvents(!showAllEvents)}
+          className="mt-3 text-sm text-blue-400 hover:text-blue-300 underline cursor-pointer"
+        >
+          {showAllEvents ? 'Show Less' : `View More (${defenseEvents.length} total)`}
+        </button>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <section className="rounded-xl bg-card border border-border shadow-lg p-6 space-y-4">
@@ -345,7 +364,7 @@ export default function Dashboard() {
               <p>
                 <span className="text-slate-400">Defense:</span> {simResult.defenseTriggered ? "BLOCKED" : "ALLOWED"}
               </p>
-              <p className="text-xs text-slate-400">{simResult.explanation}</p>
+              <p className="text-xs text-slate-400">{cleanExplanation(simResult.explanation)}</p>
             </div>
           )}
 

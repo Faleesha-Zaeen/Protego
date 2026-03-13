@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, LayoutDashboard, Search } from "lucide-react";
+import { Home, LayoutDashboard, Search, ShieldCheck } from "lucide-react";
 import WalletConnect from "./WalletConnect.jsx";
 
 const links = [
   { to: "/", label: "Home", icon: Home },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/analyzer", label: "Analyzer", icon: Search },
+  { to: "/proof", label: "Tech Proof", icon: ShieldCheck },
 ];
 
 export default function Sidebar() {
