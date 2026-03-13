@@ -10,14 +10,14 @@ router.get('/api/defense-events', (req, res) => {
 
 router.post('/api/defense-events', (req, res) => {
   try {
-    const { wallet, txHash, timestamp, status } = req.body || {};
+    const { wallet, txHash, timestamp, status, riskScore, riskLevel } = req.body || {};
     if (!wallet || !txHash || !timestamp || !status) {
       return res.status(400).json({
         error: 'wallet, txHash, timestamp, and status are required',
       });
     }
 
-    addDefenseEvent({ wallet, txHash, timestamp, status });
+    addDefenseEvent({ wallet, txHash, timestamp, status, riskScore, riskLevel });
     res.status(201).json({ success: true });
   } catch (err) {
     console.error('Failed to record defense event:', err);

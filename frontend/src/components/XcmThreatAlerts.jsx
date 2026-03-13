@@ -1,15 +1,26 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 
-const POLL_INTERVAL_MS = 12000;
+const POLL_INTERVAL_MS = 10000;
+
+function truncateAddress(value) {
+  if (!value) return "Unknown";
+  return `${value.slice(0, 6)}...${value.slice(-4)}`;
+}
+
+function formatTimestamp(value) {
+  if (!value) return "-";
+  return new Date(value).toLocaleTimeString();
+}
+
+function getRiskBadge(score) {
+  if (score > 70) return "text-danger bg-danger/10 border border-danger/30";
+  if (score > 40) return "text-warning bg-warning/10 border border-warning/30";
+  return "text-safe bg-safe/10 border border-safe/30";
+}
 
 export default function XcmThreatAlerts() {
   const [alerts, setAlerts] = useState([]);
-  const [summary, setSummary] = useState({
-    riskScore: 0,
-    riskLevel: "Low",
-    explanation: "Monitoring cross-chain activity...",
-  });
   const backendBaseUrl =
     import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "") || "http://localhost:5000";
 
@@ -26,19 +37,11 @@ export default function XcmThreatAlerts() {
         if (!isMounted) {
           return;
         }
-        setSummary({
-          riskScore: data?.riskScore ?? 0,
-          riskLevel: data?.riskLevel ?? "Low",
-          explanation:
-            data?.explanation ||
-            "Cross-chain activity within expected parameters.",
-        });
-        setAlerts(Array.isArray(data?.alerts) ? data.alerts.slice(0, 3) : []);
+        if (Array.isArray(data)) {
+          setAlerts(data);
+        }
       } catch (err) {
         console.error(err);
-        if (isMounted) {
-          setAlerts([]);
-        }
       }
     }
 
@@ -50,16 +53,12 @@ export default function XcmThreatAlerts() {
     };
   }, [backendBaseUrl]);
 
-  const badgeStyles = useMemo(() => {
-    switch (summary.riskLevel) {
-      case "High":
-        return "text-danger bg-danger/10 border border-danger/30";
-      case "Medium":
-        return "text-warning bg-warning/10 border border-warning/30";
-      default:
-        return "text-safe bg-safe/10 border border-safe/30";
-    }
-  }, [summary.riskLevel]);
+  const highestRiskScore = useMemo(() => {
+    if (!alerts.length) return 0;
+    return alerts.reduce((max, alert) => Math.max(max, Number(alert.riskScore) || 0), 0);
+  }, [alerts]);
+
+  const summaryBadge = useMemo(() => getRiskBadge(highestRiskScore), [highestRiskScore]);
 
   return (
     <section className="rounded-xl bg-card border border-border shadow-lg p-6 space-y-4">
@@ -71,11 +70,11 @@ export default function XcmThreatAlerts() {
               Live threat assessment sourced from Polkadot cross-chain telemetry.
             </p>
           </div>
-          <div className={`text-[11px] px-3 py-1 rounded-full font-semibold ${badgeStyles}`}>
-            {summary.riskLevel} · Score {summary.riskScore}
+          <div className={`text-[11px] px-3 py-1 rounded-full font-semibold ${summaryBadge}`}>
+            Score {highestRiskScore}
           </div>
         </div>
-        <p className="text-[11px] text-slate-400">{summary.explanation}</p>
+        <p className="text-[11px] text-slate-400">Monitoring cross-chain threat signals.</p>
       </header>
 
       <div className="space-y-3">
@@ -86,28 +85,39 @@ export default function XcmThreatAlerts() {
         ) : (
           alerts.map((alert) => (
             <article
-              key={`${alert.id}-${alert.block}`}
+              key={`${alert.sender}-${alert.timestamp}-${alert.destination}`}
               className="rounded-xl bg-[#0B0F19] border border-border px-4 py-3 space-y-1"
             >
               <div className="flex items-center justify-between text-xs text-slate-300">
                 <span className="flex items-center gap-1 font-semibold text-warning">
                   <AlertTriangle className="w-3.5 h-3.5" />
-                  {alert.title || "⚠ XCM Alert"}
+                  XCM Alert
                 </span>
-                <span className="text-slate-400">Risk Score: {alert.riskScore}</span>
+                <span
+                  className={`text-[11px] px-2 py-1 rounded-full font-semibold ${getRiskBadge(
+                    Number(alert.riskScore) || 0
+                  )}`}
+                >
+                  Score {alert.riskScore ?? 0}
+                </span>
               </div>
               <div className="text-sm text-slate-50">
                 Destination: {alert.destination || "Unknown Parachain"}
               </div>
               <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-                <span>Block #{alert.block || "-"}</span>
-                <span>Method: {alert.method}</span>
+                <span>Amount: {alert.amount || "-"}</span>
+                <span>Sender: {truncateAddress(alert.sender)}</span>
+                <span>Time: {formatTimestamp(alert.timestamp)}</span>
               </div>
-              {alert.reasons?.length > 0 && (
-                <p className="text-[11px] text-slate-500">
-                  {alert.reasons.join(" ")}
-                </p>
-              )}
+              <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                <span>Section: {alert.section || "-"}</span>
+                <span>Method: {alert.method || "-"}</span>
+                {alert.flagged === true && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold text-danger bg-danger/10 border border-danger/30">
+                    FLAGGED
+                  </span>
+                )}
+              </div>
             </article>
           ))
         )}

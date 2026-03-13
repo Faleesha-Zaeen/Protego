@@ -8,7 +8,9 @@ const backendBaseUrl =
 
 const statusColors = {
   BLOCKED: "bg-red-500/10 text-danger border border-danger/40",
+  CAUTION: "bg-yellow-500/10 text-warning border border-warning/40",
   ALLOWED: "bg-safe/10 text-safe border border-safe/40",
+  ANALYZING: "bg-blue-500/10 text-blue-300 border border-blue-400/30",
 };
 
 const riskPills = {
@@ -46,7 +48,13 @@ async function fetchDefenseTriggered(walletAddress, sinceTimestamp) {
   }
 }
 
-export default function WalletProtectionPanel({ walletAddress, lastTransaction }) {
+export default function WalletProtectionPanel({
+  walletAddress,
+  walletConnected,
+  lastTransaction,
+  prefillResult,
+  loadingOverride,
+}) {
   const [riskScore, setRiskScore] = useState(null);
   const [riskLevel, setRiskLevel] = useState(null);
   const [explanation, setExplanation] = useState("Connect a wallet and analyze a transaction to see details.");
@@ -55,7 +63,9 @@ export default function WalletProtectionPanel({ walletAddress, lastTransaction }
   const [error, setError] = useState(null);
   const [analysisTimestamp, setAnalysisTimestamp] = useState(null);
 
-  const hasWallet = Boolean(walletAddress);
+  const isConnected = typeof walletConnected === "boolean" ? walletConnected : Boolean(walletAddress);
+  const usePrefill = Boolean(prefillResult) && !isConnected;
+  const isLoading = loading || Boolean(loadingOverride);
   const txnSummary = useMemo(() => {
     if (!lastTransaction) return "No transaction analyzed yet.";
     const method = lastTransaction.method || "unknown";
@@ -67,7 +77,18 @@ export default function WalletProtectionPanel({ walletAddress, lastTransaction }
   }, [lastTransaction]);
 
   useEffect(() => {
-    if (!hasWallet || !lastTransaction) {
+    if (usePrefill) {
+      setRiskScore(prefillResult?.riskScore ?? null);
+      setRiskLevel(prefillResult?.riskLevel ?? null);
+      setExplanation(prefillResult?.explanation ?? "Risk engine did not return an explanation.");
+      setDefenseTriggered(Boolean(prefillResult?.defenseTriggered || prefillResult?.riskLevel === "HIGH"));
+      setAnalysisTimestamp(Date.now());
+      setError(null);
+      setLoading(false);
+      return undefined;
+    }
+
+    if (!isConnected || !lastTransaction) {
       setRiskScore(null);
       setRiskLevel(null);
       setDefenseTriggered(false);
@@ -122,13 +143,24 @@ export default function WalletProtectionPanel({ walletAddress, lastTransaction }
     return () => {
       cancelled = true;
     };
-  }, [hasWallet, lastTransaction, walletAddress]);
+  }, [isConnected, lastTransaction, walletAddress, usePrefill, prefillResult]);
 
-  const statusLabel = defenseTriggered ? "BLOCKED" : "ALLOWED";
+  const isBlocked = defenseTriggered || riskLevel === "HIGH";
+  const isCaution = riskLevel === "MEDIUM";
+  const isAllowed = riskLevel === "LOW";
+  const statusLabel = isLoading
+    ? "ANALYZING"
+    : isBlocked
+    ? "BLOCKED"
+    : isCaution
+    ? "CAUTION"
+    : isAllowed
+    ? "ALLOWED"
+    : "ALLOWED";
   const statusClass = statusColors[statusLabel] || statusColors.ALLOWED;
   const riskBadge = riskLevel ? riskPills[riskLevel] : "text-slate-400 bg-slate-700/30 border border-slate-700";
-  const protectionStatus = hasWallet ? "ACTIVE" : "INACTIVE";
-  const protectionClass = hasWallet ? "text-safe" : "text-warning";
+  const protectionStatus = isConnected || usePrefill ? "ACTIVE" : "INACTIVE";
+  const protectionClass = isConnected || usePrefill ? "text-safe" : "text-warning";
 
   return (
     <motion.section
@@ -152,7 +184,9 @@ export default function WalletProtectionPanel({ walletAddress, lastTransaction }
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         <div className="rounded-xl bg-[#0B0F19] border border-border px-4 py-3 space-y-1">
           <p className="text-[11px] uppercase tracking-wide text-slate-400">Wallet</p>
-          <p className="font-mono text-slate-50">{hasWallet ? truncate(walletAddress, 6) : "Not connected"}</p>
+          <p className="font-mono text-slate-50">
+            {walletAddress ? truncate(walletAddress, 6) : "Not connected"}
+          </p>
           <p className={`text-[11px] ${protectionClass}`}>Protection {protectionStatus}</p>
         </div>
         <div className="rounded-xl bg-[#0B0F19] border border-border px-4 py-3 space-y-1">
@@ -166,7 +200,7 @@ export default function WalletProtectionPanel({ walletAddress, lastTransaction }
         </div>
         <div className="rounded-xl bg-[#0B0F19] border border-border px-4 py-3 space-y-2">
           <p className="text-[11px] uppercase tracking-wide text-slate-400">Analysis</p>
-          {loading ? (
+          {isLoading ? (
             <div className="flex items-center gap-2 text-slate-300">
               <Loader2 className="w-4 h-4 animate-spin" /> Analyzing transaction...
             </div>
@@ -182,7 +216,7 @@ export default function WalletProtectionPanel({ walletAddress, lastTransaction }
               )}
             </div>
           )}
-          {riskScore !== null && !loading && (
+          {riskScore !== null && !isLoading && (
             <p className="text-xl font-semibold text-slate-50">Risk Score: {riskScore}</p>
           )}
           {error && <p className="text-xs text-danger">{error}</p>}
@@ -193,12 +227,28 @@ export default function WalletProtectionPanel({ walletAddress, lastTransaction }
         <div className="rounded-xl bg-[#0B0F19] border border-border px-4 py-3 space-y-2">
           <p className="text-[11px] uppercase tracking-wide text-slate-400">Defense Action</p>
           <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${statusClass}`}>
-            {defenseTriggered ? <ShieldAlert className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
-            {defenseTriggered ? "Blocked by DefenseExecutor" : "Allowed"}
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : isBlocked || isCaution ? (
+              <ShieldAlert className="w-4 h-4" />
+            ) : (
+              <ShieldCheck className="w-4 h-4" />
+            )}
+            {isLoading
+              ? "Analyzing"
+              : isBlocked
+              ? "Blocked by DefenseExecutor"
+              : isCaution
+              ? "Caution"
+              : "Allowed"}
           </div>
           <p className="text-[11px] text-slate-400">
-            {defenseTriggered
+            {isLoading
+              ? "Protego is analyzing the latest transaction for threats."
+              : isBlocked
               ? "Latest DefenseExecutor call secured the wallet via GuardianVault."
+              : isCaution
+              ? "Suspicious activity detected; review before approving."
               : "No automated defenses triggered for the last transaction."}
           </p>
         </div>

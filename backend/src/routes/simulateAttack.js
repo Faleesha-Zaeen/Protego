@@ -1,55 +1,53 @@
+const crypto = require('crypto');
 const express = require('express');
+const { analyzeTransaction } = require('../services/riskEngine');
+const { addDefenseEvent } = require('../services/defenseEvents');
 
-// Attack simulation route factory
-// Example usage in index.js:
-// app.use('/api/simulate-attack', createSimulateAttackRouter(riskEngine));
-module.exports = function createSimulateAttackRouter(riskEngine) {
-  const router = express.Router();
+const router = express.Router();
 
-  // GET /api/simulate-attack
-  router.get('/', async (req, res) => {
-    try {
-      const overrides = req.query || {};
+// POST /api/simulate-attack
+router.post('/simulate-attack', async (req, res) => {
+  try {
+    const body = req.body || {};
 
-      const tx = {
-        walletAddress: overrides.walletAddress || '0xUser123',
-        contractAddress:
-          overrides.contractAddress || '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
-        method: overrides.method || 'approve',
-        value:
-          typeof overrides.value !== 'undefined'
-            ? overrides.value
-            : 0,
-        unlimitedApproval:
-          typeof overrides.unlimitedApproval !== 'undefined'
-            ? overrides.unlimitedApproval === 'true' || overrides.unlimitedApproval === true
-            : true,
-      };
+    const result = await analyzeTransaction({
+      walletAddress: body.walletAddress,
+      contractAddress: body.contractAddress,
+      method: body.method || 'approve',
+      value: body.value,
+      unlimitedApproval: body.unlimitedApproval || true,
+      isKnownContract: false,
+      approvalAmount: 'unlimited',
+    });
 
-      const { riskScore, riskLevel, explanation } =
-        await riskEngine.analyzeTransaction(tx);
-
-      const response = {
-        simulated: true,
-        transaction: tx,
-        riskScore,
-        riskLevel,
-        explanation,
-      };
-
-      if (riskLevel === 'HIGH') {
-        response.defenseTriggered = true;
-        response.message = 'Protego blocked a malicious approval attempt.';
-      }
-
-      res.json(response);
-    } catch (err) {
-      console.error('Error in simulate-attack route:', err);
-      res.status(500).json({
-        error: 'Internal Server Error',
+    if (result.riskLevel === 'HIGH') {
+      addDefenseEvent({
+        wallet: body.walletAddress,
+        txHash: `0x${crypto.randomBytes(32).toString('hex')}`,
+        timestamp: Date.now(),
+        status: 'confirmed',
+        riskScore: result.riskScore,
+        riskLevel: result.riskLevel,
       });
     }
-  });
 
-  return router;
-};
+    res.json({
+      riskScore: result.riskScore,
+      riskLevel: result.riskLevel,
+      explanation: result.explanation,
+      defenseTriggered: result.riskLevel === 'HIGH',
+      transaction: {
+        walletAddress: body.walletAddress,
+        contractAddress: body.contractAddress,
+        method: body.method || 'approve',
+        value: body.value,
+        unlimitedApproval: true,
+      },
+    });
+  } catch (err) {
+    console.error('Error in simulate-attack route:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+module.exports = router;

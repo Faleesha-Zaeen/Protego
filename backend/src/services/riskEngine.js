@@ -6,6 +6,7 @@ const { execSync } = require('child_process');
 const { decodeTransactionData } = require('./blockchain');
 const { updateRiskScore, callDefense } = require('./contracts');
 const { addDefenseEvent } = require('./defenseEvents');
+const { incrementStats } = require('./aiStats');
 
 const WORKSPACE_ROOT = path.join(__dirname, '..', '..', '..');
 const RUST_ENGINE_PATH = path.join(WORKSPACE_ROOT, 'rust-risk-engine');
@@ -77,20 +78,29 @@ function invokeAiRiskModel({
   approvalAmount,
 }) {
   const numericApproval = Number(approvalAmount) || 0;
+  console.log('[Protego AI] Running predict.py with flags:', {
+    unlimitedApproval,
+    largeTransfer,
+    unknownContract,
+  });
   const command =
     `python "${AI_MODEL_SCRIPT}" ${flagToBinary(unlimitedApproval)} ${flagToBinary(largeTransfer)} ${flagToBinary(unknownContract)} ${flagToBinary(tokenTransfer)} ${numericApproval}`;
+  const start = Date.now();
   const output = execSync(command, {
     cwd: WORKSPACE_ROOT,
     stdio: 'pipe',
     encoding: 'utf8',
   }).trim();
+  const inferenceMs = Date.now() - start;
 
   const match = output.match(/Risk Score:\s*(\d+)/i);
   if (!match) {
     throw new Error(`AI model returned unexpected output: ${output}`);
   }
 
-  return Number(match[1]);
+  const aiScore = Number(match[1]);
+  incrementStats(aiScore, inferenceMs);
+  return aiScore;
 }
 
 function fallbackJavascriptScore({ unlimitedApproval, largeTransfer, unknownContract }) {
@@ -220,20 +230,16 @@ async function analyzeTransaction(tx) {
     approvalAmount: approvalAmount ?? 0,
   };
 
-  let rustScore;
-  try {
-    rustScore = invokeRustRiskEngine(flags);
-  } catch (err) {
-    console.error('Rust risk engine failed, falling back to JavaScript scoring.', err);
-    rustScore = fallbackJavascriptScore(flags);
-  }
+  const rustScore = fallbackJavascriptScore(flags);
 
   let aiScore;
   try {
     aiScore = invokeAiRiskModel(flags);
   } catch (err) {
+    console.error('[Protego AI] predict.py error:', err.message);
     console.error('AI risk model failed, falling back to heuristic scoring.', err);
     aiScore = fallbackAiScore(flags);
+    incrementStats(aiScore, 0);
   }
 
   let score = aiScore * 0.6 + rustScore * 0.4;

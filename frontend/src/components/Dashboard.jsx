@@ -3,13 +3,22 @@ import DefenseEventsFeed from "./DefenseEventsFeed.jsx";
 import XcmThreatAlerts from "./XcmThreatAlerts.jsx";
 import AttackSimulator from "./AttackSimulator.jsx";
 import WalletProtectionPanel from "./WalletProtectionPanel.jsx";
-import ProtectionStatus from "./ProtectionStatus.jsx";
 
 const backendBaseUrl =
   import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "") || "http://localhost:5000";
-const LAST_TRANSACTION_STORAGE_KEY = "aegisdot:last-transaction";
-const LAST_TRANSACTION_EVENT = "aegisdot:last-transaction";
-const ANALYSIS_COUNT_KEY = "aegisdot:analysis-count";
+const LAST_TRANSACTION_STORAGE_KEY = "protego:last-transaction";
+const LAST_TRANSACTION_EVENT = "protego:last-transaction";
+const ANALYSIS_COUNT_KEY = "protego:analysis-count";
+
+const AUTO_SIM_DELAY_MS = 3000;
+const AUTO_SIM_RETRY_DELAY_MS = 2000;
+const AUTO_SIM_PAYLOAD = {
+  walletAddress: "0xa111111111111111111111111111111111111111",
+  contractAddress: "0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF",
+  method: "approve",
+  value: "unlimited",
+  unlimitedApproval: true,
+};
 
 const getTodayKey = () => new Date().toISOString().slice(0, 10);
 
@@ -85,7 +94,8 @@ export default function Dashboard() {
   const [lastTransaction, setLastTransaction] = useState(() => readLastTransactionFromStorage());
   const [simLogs, setSimLogs] = useState([]);
   const [simResult, setSimResult] = useState(null);
-  const [analysisCount, setAnalysisCount] = useState(() => readAnalysisCountFromStorage());
+  useState(() => readAnalysisCountFromStorage());
+  const [autoSimState, setAutoSimState] = useState("idle");
 
   useEffect(() => {
     let isMounted = true;
@@ -121,7 +131,6 @@ export default function Dashboard() {
 
     const syncFromStorage = () => {
       setLastTransaction(readLastTransactionFromStorage());
-      setAnalysisCount(readAnalysisCountFromStorage());
     };
 
     const handleStorage = (event) => {
@@ -137,7 +146,6 @@ export default function Dashboard() {
     const handleCustomEvent = (event) => {
       if (event?.detail) {
         setLastTransaction(event.detail);
-        setAnalysisCount(readAnalysisCountFromStorage());
       }
     };
 
@@ -190,8 +198,7 @@ export default function Dashboard() {
       console.error("Failed to persist transaction", err);
     }
 
-    const nextCount = incrementAnalysisCountInStorage();
-    setAnalysisCount(nextCount);
+    incrementAnalysisCountInStorage();
 
     try {
       window.dispatchEvent(new CustomEvent(LAST_TRANSACTION_EVENT, { detail: payload }));
@@ -212,34 +219,93 @@ export default function Dashboard() {
       defenseTriggered: Boolean(data.defenseTriggered),
     });
 
-    if (data?.transaction) {
+    const txSource = data?.transaction;
+    if (txSource) {
       const txRecord = {
-        walletAddress: data.transaction.walletAddress,
-        contractAddress: data.transaction.contractAddress,
-        method: data.transaction.method,
-        value: data.transaction.value,
-        unlimitedApproval: data.transaction.unlimitedApproval,
+        walletAddress: txSource.walletAddress,
+        contractAddress: txSource.contractAddress,
+        method: txSource.method,
+        value: txSource.value,
+        unlimitedApproval: txSource.unlimitedApproval,
         timestamp: Date.now(),
       };
       setLastTransaction(txRecord);
       persistLastTransaction(txRecord, data);
+      return;
     }
+
+    incrementAnalysisCountInStorage();
   };
 
-  const confirmedBlocks = defenseEvents.filter(
-    (event) => event?.status?.toLowerCase() === "confirmed"
-  ).length;
+  useEffect(() => {
+    let cancelled = false;
+    let retryTimer;
+
+    const runAutoSimulation = async () => {
+      setAutoSimState("loading");
+      pushSimLog("Auto-simulation started.");
+      const res = await fetch(`${backendBaseUrl}/api/simulate-attack`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(AUTO_SIM_PAYLOAD),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Auto-simulation failed: ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (cancelled) return;
+
+      handleSimResult({
+        ...data,
+        transaction: data?.transaction || AUTO_SIM_PAYLOAD,
+      });
+      pushSimLog(
+        `Auto-simulation complete. Risk ${data?.riskLevel || "UNKNOWN"} (${data?.riskScore ?? "-"}).`
+      );
+      setAutoSimState("done");
+    };
+
+    const timer = setTimeout(async () => {
+      try {
+        await runAutoSimulation();
+      } catch (err) {
+        if (cancelled) return;
+        retryTimer = setTimeout(async () => {
+          try {
+            await runAutoSimulation();
+          } catch (retryErr) {
+            if (!cancelled) {
+              console.error(retryErr);
+              pushSimLog("Auto-simulation failed. Check backend connection.");
+              setAutoSimState("error");
+            }
+          }
+        }, AUTO_SIM_RETRY_DELAY_MS);
+      }
+    }, AUTO_SIM_DELAY_MS);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      if (retryTimer) {
+        clearTimeout(retryTimer);
+      }
+    };
+  }, []);
 
   return (
     <div className="space-y-6">
-      <ProtectionStatus
+      <WalletProtectionPanel
+        walletAddress={account || lastTransaction?.walletAddress || ""}
         walletConnected={Boolean(account)}
-        analysisCount={analysisCount}
-        threatsBlocked={confirmedBlocks}
-        defensesTriggered={defenseEvents.length}
+        lastTransaction={lastTransaction}
+        loadingOverride={autoSimState === "loading"}
+        prefillResult={simResult}
       />
-
-      <WalletProtectionPanel walletAddress={account} lastTransaction={lastTransaction} />
 
       <DefenseEventsFeed events={defenseEvents} />
 

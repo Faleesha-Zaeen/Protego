@@ -4,7 +4,38 @@ const RPC_ENDPOINT = 'wss://rpc.polkadot.io';
 const MAX_EVENTS = 30;
 const xcmSections = new Set(['xcmPallet', 'xcmpQueue', 'dmpQueue', 'polkadotXcm']);
 
-let events = [];
+let events = [
+  {
+    sender: '0xc333333333333333333333333333333333333333',
+    destination: 'Hydration',
+    amount: '1500000',
+    timestamp: Date.now() - 120000,
+    riskScore: 45,
+    flagged: false,
+    section: 'xcmPallet',
+    method: 'reserveTransferAssets',
+  },
+  {
+    sender: '0xd444444444444444444444444444444444444444',
+    destination: 'Unknown Parachain #2087',
+    amount: '9500000',
+    timestamp: Date.now() - 240000,
+    riskScore: 82,
+    flagged: true,
+    section: 'xcmPallet',
+    method: 'reserveTransferAssets',
+  },
+  {
+    sender: '0xe555555555555555555555555555555555555555',
+    destination: 'Astar',
+    amount: '250000',
+    timestamp: Date.now() - 480000,
+    riskScore: 15,
+    flagged: false,
+    section: 'xcmPallet',
+    method: 'teleportAssets',
+  },
+];
 let apiInstance;
 let monitorStarted = false;
 
@@ -183,9 +214,11 @@ async function initXcmMonitor() {
             section,
             method: event.method,
             timestamp,
-            destinationChain: extractDestinationChain(humanData),
+            destination: extractDestinationChain(humanData),
             amount: extractAmount(humanData),
             sender: extractSender(humanData),
+            riskScore: 0,
+            flagged: false,
           };
 
           events.unshift(entry);

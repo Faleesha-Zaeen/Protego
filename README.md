@@ -1,165 +1,163 @@
-# Protego – AI Security Firewall for Web3
+# Protego — AI Security Firewall for Web3
 
-> “Protego is an AI-powered transaction firewall for Web3, protecting wallets and cross-chain activity in real time.”
+> The security layer every Polkadot dApp needs. Protego inspects 
+> transactions before signatures land on-chain, enforces risk limits 
+> via a PVM smart contract, and triggers automated on-chain defenses 
+> when threats are detected.
 
-**Tagline:** Protego is the AI-powered on-chain security layer for wallet transactions and Polkadot cross-chain activity.
+## What Protego Does
 
----
+Most Web3 users blindly sign transactions. Once signed, malicious 
+approvals and large transfers are irreversible. Protego sits between 
+the user and the chain — analyzing calldata, scoring risk via an 
+on-chain PVM contract, and blocking threats before they execute.
 
-## Project Overview
-Protego is an autonomous security operations stack that continuously inspects wallet transactions and Polkadot XCM traffic. It blends a Python AI model, a Rust risk engine, and Solidity smart contracts to detect, score, and neutralize threats without human intervention.
-
-## Key Features
-- AI + Rust hybrid scoring of wallet transactions.
-- Automatic on-chain defenses through `DefenseExecutor` and `GuardianVault`.
-- Real-time monitoring of Polkadot hub runtime events via `@polkadot/api`.
-- XCM risk analyzer with automatic mitigation when cross-chain risk exceeds 80.
-- Rich React dashboard with live threat feed, defense history, attack simulator, and architecture view.
+**This is infrastructure. Every dApp in the Polkadot ecosystem needs 
+Protego to protect its users.**
 
 ## Architecture
-```
-User Wallet
-	↓
-Transaction Analyzer
-	↓
-AI Risk Model (Python)
-	↓
-Rust Risk Engine
-	↓
-DefenseExecutor (Solidity)
-	↓
-GuardianVault → Polkadot Hub
 
-Polkadot Hub
-	↓
-XCM Monitor (@polkadot/api)
-	↓
-XCM Risk Analyzer
-	↓
-Dashboard Alerts → DefenseExecutor
+```
+User Transaction
+      │
+      ▼
+ AI Risk Model (off-chain, LogisticRegression 0.92 accuracy)
+      │
+      ▼
+ DefenseExecutor.sol (EVM) ──cross-VM call──▶ RiskEngine (PVM/PolkaVM)
+      │                                            │
+      │                                    Returns risk score 0-100
+      │
+      ├── score > 70 → GuardianVault.secureTransfer() → BLOCKED
+      └── score ≤ 70 → ALLOWED
+      
+ XCM Monitor → detects cross-chain threats → logs to RiskRegistry
 ```
 
-## System Workflow
-1. Wallet transaction hits the backend Transaction Analyzer.
-2. Calldata decoding identifies approvals/transfers and flags unlimited approvals.
-3. Flags feed the Rust heuristic engine and Python AI model.
-4. Weighted score yields LOW/MEDIUM/HIGH severity.
-5. HIGH scores trigger on-chain updates via `RiskRegistry.updateRiskScore()` and `DefenseExecutor.evaluateAndDefend()` to secure funds inside `GuardianVault`.
-6. Defense receipts are broadcast to the dashboard.
+## Track 2 — PVM Smart Contract
 
-## XCM Monitoring Layer
-- `xcmMonitor` subscribes to Substrate runtime events (XCM sections) through `@polkadot/api`.
-- Events are normalized with destination chain, sender, amount, and timestamp metadata.
-- `xcmRiskAnalyzer` scores each event: unknown destination (+30), large transfer (+40), rapid repeated sender (+20).
-- Aggregate risk > 80 automatically triggers `DefenseExecutor.evaluateAndDefend()` and logs defense events.
-- Dashboard cards (`XcmMonitor`, `XcmThreatAlerts`) visualize live telemetry and mitigation history.
+Protego is a genuine EVM ↔ PVM cross-VM project:
 
-## AI + Rust Risk Engine
-- **Python AI System**: pandas-style feature extraction, ~4,800 labeled samples, trained model stored as `model.pkl` for CLI predictions.
-- **Rust Engine**: `rust-risk-engine` applies deterministic heuristics for parity with on-chain logic; invoked via `cargo run` and parsed in Node.
-- Backend combines both scores (0.6 AI / 0.4 Rust) for resilient detection even if one path fails (fallback heuristics included).
+- `RiskEngine.sol` compiled with **resolc** to **PolkaVM bytecode**
+- `DefenseExecutor.sol` (EVM/Solidity) calls `RiskEngine` (PVM) 
+  on-chain via cross-VM call
+- Verified cross-VM transaction on Polkadot Hub TestNet:
+  [`0x9890fd9602ec8db8bb99943760d91b85046129360e25f87c1ad481b318d209e9`](https://blockscout-testnet.polkadot.io/tx/0x9890fd9602ec8db8bb99943760d91b85046129360e25f87c1ad481b318d209e9)
 
-## Smart Contracts
-- **GuardianVault**: final asset custody and emergency lockbox.
-- **RiskRegistry**: authoritative ledger of wallet risk scores.
-- **DefenseExecutor**: orchestrates mitigation actions (calling GuardianVault, updating risk, halting approvals). Contracts are developed with Hardhat and consumed via ethers v6.
+## Deployed Contracts (Polkadot Hub TestNet)
 
-## Dashboard Interface
-- Wallet connect CTA + Defense pipeline hero block.
-- Threat feed and defense event feed refreshed every 10 seconds.
-- Metrics grid for threats, defenses, monitored wallets, and system state.
-- Runtime and AI model health widgets.
-- Attack Simulator to demonstrate detection + defense flows live.
-- XCM monitor and threat alert cards with automatic defense indicators.
+| Contract | Address | Type |
+|---|---|---|
+| RiskEngine | `0x8ac03522a73EF023cF5A9CEC767D7a07736b45d9` | PVM (PolkaVM) |
+| DefenseExecutor | `0xf3b8cfF56A5c83D4e7ca36B0e35F6f67cabAC1F2` | EVM (Solidity) |
+| GuardianVault | `0xDBC63E7c1C244D5D0359Be41F8815592b8097619` | EVM (Solidity) |
+| RiskRegistry | `0x42Cc0cfD29D8d57BcAFB479B60900D362aC5b63A` | EVM (Solidity) |
 
-## Tech Stack
-- **Smart Contracts**: Solidity, Hardhat.
-- **Backend**: Node.js, Express.js, ethers v6, child-process bridges to Python & Rust.
-- **AI**: Python, pandas, custom feature extraction scripts, virtualenv.
-- **Rust**: Cargo project implementing risk heuristics.
-- **Frontend**: React, Vite, TailwindCSS, Framer Motion, Lucide icons.
-- **Monitoring**: `@polkadot/api` WebSocket client, custom `xcmRiskAnalyzer`.
+Network: Polkadot Hub TestNet (Paseo)
+- Chain ID: `420420417`
+- RPC: `https://eth-rpc-testnet.polkadot.io/`
+- Explorer: [Blockscout TestNet](https://blockscout-testnet.polkadot.io)
 
-## Project Structure
-```
-Protego/
-├── contracts/
-├── backend/
-├── frontend/
-├── rust-risk-engine/
-├── ai-risk-model/
-├── scripts/
-└── docs/
-```
+## Quick Start
 
-## Installation
+### Prerequisites
+- Node.js 22+
+- MetaMask with Polkadot Hub TestNet configured
+- Python 3.13+ (for AI model)
+
+### 1. Add Polkadot Hub TestNet to MetaMask
+
+| Setting | Value |
+|---|---|
+| RPC URL | `https://eth-rpc-testnet.polkadot.io/` |
+| Chain ID | `420420417` |
+| Symbol | `PAS` |
+| Explorer | `https://blockscout-testnet.polkadot.io` |
+
+### 2. Install & Run
+
 ```bash
-git clone https://github.com/<your-org>/Protego.git
+# Clone
+git clone https://github.com/Faleesha-Zaeen/Protego
 cd Protego
 
-# Install root dependencies (Hardhat, shared tooling)
-npm install
+# Backend
+cd backend && npm install && npm start
 
-# Backend deps
-cd backend
-npm install
+# Frontend (new terminal)
+cd frontend && npm install && npm run dev
 
-# Frontend deps
-cd ../frontend
-npm install
-
-# Python virtualenv for AI model
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r ai-risk-model/requirements.txt
+# Open http://localhost:5173
 ```
 
-## Running the Project
-1. **Launch backend**
-	 ```bash
-	 cd backend
-	 npm start
-	 ```
-2. **Run Rust risk engine tests (optional)**
-	 ```bash
-	 cd rust-risk-engine
-	 cargo test
-	 ```
-3. **Serve frontend**
-	 ```bash
-	 cd frontend
-	 npm run dev
-	 ```
-4. **AI model prediction check**
-	 ```bash
-	 .venv/bin/python ai-risk-model/predict.py 1 0 1
-	 ```
+### 3. Try It
 
-Ensure `.env` contains contract addresses (`GUARDIAN_VAULT_ADDRESS`, `RISK_REGISTRY_ADDRESS`, `DEFENSE_EXECUTOR_ADDRESS`) and `RPC_URL` for ethers.
+1. Open the dashboard — auto-simulation runs immediately
+2. Connect your MetaMask wallet
+3. Click "Simulate Malicious Transaction" 
+4. Watch: AI scores the tx → DefenseExecutor calls PVM RiskEngine 
+   → score returned → GuardianVault blocks the threat
+5. Check Defense Events for on-chain confirmation
 
-## API Endpoints
-| Endpoint | Method | Description |
-| --- | --- | --- |
-| `/health` | GET | Service heartbeat |
-| `/api/analyze-transaction` | POST | Primary transaction risk analysis |
-| `/api/simulate-attack` | POST | Demo attack simulator |
-| `/api/defense-events` | GET | Defense history feed |
-| `/api/xcm-events` | GET | Raw XCM events (latest 30) |
-| `/api/xcm-threat-alerts` | GET | Aggregated XCM risk report + auto-defense status |
+## Tech Stack
 
-## Demo
-- Live demo / video walkthrough: _Coming soon_
-- Slides & architecture diagrams located in `docs/`.
+| Layer | Technology |
+|---|---|
+| Frontend | React, Vite, Tailwind CSS, wagmi |
+| Backend | Node.js, Express |
+| AI Model | scikit-learn LogisticRegression (accuracy: 0.92) |
+| EVM Contracts | Solidity 0.8.20, Hardhat |
+| PVM Contract | Solidity → resolc → PolkaVM bytecode |
+| Cross-VM | DefenseExecutor (EVM) calls RiskEngine (PVM) |
+| XCM | Polkadot.js WebSocket subscription |
+| Network | Polkadot Hub TestNet (chain 420420417) |
 
-## Future Improvements
-- Expand AI dataset with on-chain real samples from multiple chains.
-- Integrate zk-proof attestations for defense actions.
-- Add mobile push notifications for wallet owners.
-- Deploy dedicated indexer for parachain-specific XCM feeds.
+## Smart Contracts
 
-## 📄 License
-This project is released under the MIT License. See `LICENSE` for details.
+### RiskEngine (PVM)
+Compiled with `resolc` to PolkaVM bytecode. Deployed on Polkadot Hub.
+```solidity
+function assessRisk(bytes calldata txCalldata) 
+    external pure returns (uint8 score)
+```
+Scores 0-100: unlimited approval (+40), large transfer (+30), 
+unknown contract (+20).
 
----
+### DefenseExecutor (EVM)
+Solidity contract that calls RiskEngine via cross-VM call.
+```solidity
+function evaluateAndDefend(address user, bytes calldata txCalldata) 
+    external returns (uint8 score)
+```
+If score > 70: triggers GuardianVault.secureTransfer().
 
-**Built for the Polkadot Hackathon**
+### GuardianVault (EVM)
+Custody contract. Holds funds and executes secure transfers 
+during defense actions.
+
+### RiskRegistry (EVM)
+On-chain risk score registry. Stores wallet risk scores updated 
+by the backend and DefenseExecutor.
+
+## AI Risk Model
+
+Off-chain logistic regression model trained on 10,000 synthetic 
+transactions. Outputs continuous probability score 0-100.
+
+- Accuracy: 0.92
+- Features: unlimited_approval, large_transfer, unknown_contract, 
+  token_transfer, approval_amount
+- Combined with on-chain PVM scoring for two-layer protection
+
+## Why Polkadot?
+
+Protego is built specifically for Polkadot because:
+1. **PVM enables on-chain enforcement** — risk logic runs in PolkaVM, 
+   non-bypassable by anyone
+2. **XCM creates cross-chain attack surface** — Protego monitors 
+   XCM events for suspicious patterns
+3. **Every parachain dApp needs this** — Protego is ecosystem 
+   infrastructure, not a single-app feature
+
+## License
+MIT

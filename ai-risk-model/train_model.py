@@ -1,51 +1,83 @@
-import joblib
+import numpy as np
 import pandas as pd
+import joblib
 from pathlib import Path
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import StandardScaler
 
-DATA_PATH = Path(__file__).resolve().parent / "dataset_labeled.csv"
-MODEL_PATH = Path(__file__).resolve().parent / "model.pkl"
+OUTPUT_DIR = Path(__file__).resolve().parent
+MODEL_PATH = OUTPUT_DIR / "model.pkl"
+SCALER_PATH = OUTPUT_DIR / "scaler.pkl"
 
-
-def load_dataset(path: Path) -> pd.DataFrame:
-  if not path.exists():
-    raise FileNotFoundError(f"Dataset not found at {path}")
-  return pd.read_csv(path)
+RNG = np.random.default_rng(42)
 
 
-def train_model(df: pd.DataFrame) -> RandomForestClassifier:
-  feature_cols = ["unlimited_approval", "large_transfer", "unknown_contract"]
-  target_col = "risk_level"
+def generate_data(num_samples: int) -> pd.DataFrame:
+  unlimited_approval = RNG.integers(0, 2, size=num_samples)
+  large_transfer = RNG.integers(0, 2, size=num_samples)
+  unknown_contract = RNG.integers(0, 2, size=num_samples)
+  token_transfer = RNG.integers(0, 2, size=num_samples)
+  approval_amount = RNG.uniform(0, 1e18, size=num_samples)
+  approval_amount += RNG.normal(0, 1e16, size=num_samples)
+  approval_amount = np.clip(approval_amount, 0, 1e18)
+  approval_amount_norm = approval_amount / 1e18
 
-  X = df[feature_cols]
-  y = df[target_col]
-
-  X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y
+  data = pd.DataFrame(
+    {
+      "unlimited_approval": unlimited_approval,
+      "large_transfer": large_transfer,
+      "unknown_contract": unknown_contract,
+      "token_transfer": token_transfer,
+      "approval_amount_norm": approval_amount_norm,
+    }
   )
 
-  model = RandomForestClassifier(
-    n_estimators=200,
-    max_depth=5,
-    random_state=42,
-    class_weight="balanced",
+  malicious = (
+    (data["unlimited_approval"] == 1) & (data["unknown_contract"] == 1)
+  ) | (
+    (data["approval_amount_norm"] > 0.5) & (data["unknown_contract"] == 1)
+  ) | (
+    (data["large_transfer"] == 1) & (data["unknown_contract"] == 1)
   )
-  model.fit(X_train, y_train)
 
-  y_pred = model.predict(X_test)
-  accuracy = accuracy_score(y_test, y_pred)
-  print(f"Validation accuracy: {accuracy:.4f}")
+  labels = malicious.astype(int)
+  flip_mask = RNG.random(num_samples) < 0.05
+  labels[flip_mask] = 1 - labels[flip_mask]
+  data["label"] = labels
+  return data
 
-  return model
 
+def main() -> None:
+  data = generate_data(10000)
+  features = data[
+    [
+      "unlimited_approval",
+      "large_transfer",
+      "unknown_contract",
+      "token_transfer",
+      "approval_amount_norm",
+    ]
+  ]
+  labels = data["label"]
 
-def main():
-  df = load_dataset(DATA_PATH)
-  model = train_model(df)
+  x_train, x_test, y_train, y_test = train_test_split(
+    features, labels, test_size=0.2, random_state=42, stratify=labels
+  )
+
+  scaler = StandardScaler()
+  x_train_scaled = scaler.fit_transform(x_train)
+  x_test_scaled = scaler.transform(x_test)
+
+  model = LogisticRegression(max_iter=1000)
+  model.fit(x_train_scaled, y_train)
+
+  accuracy = model.score(x_test_scaled, y_test)
+
   joblib.dump(model, MODEL_PATH)
-  print(f"Model saved to {MODEL_PATH}")
+  joblib.dump(scaler, SCALER_PATH)
+
+  print(f"Model trained. Accuracy: {accuracy:.2f}")
 
 
 if __name__ == "__main__":

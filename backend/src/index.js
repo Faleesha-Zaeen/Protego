@@ -8,9 +8,10 @@ const riskEngine = require('./services/riskEngine');
 
 // Routers
 const analyzeRouterFactory = require('./routes/analyze');
-const simulateAttackRouterFactory = require('./routes/simulateAttack');
+const simulateAttackRouter = require('./routes/simulateAttack');
 const defenseEventsRouter = require('./routes/defenseEvents');
 const xcmRouter = require('./routes/xcm');
+const aiStatsRouter = require('./routes/aiStats');
 
 const app = express();
 
@@ -28,13 +29,16 @@ app.get('/health', (req, res) => {
 app.use(analyzeRouterFactory(riskEngine));
 
 // Mount attack simulation under /api/simulate-attack
-app.use('/api/simulate-attack', simulateAttackRouterFactory(riskEngine));
+app.use('/api', simulateAttackRouter);
 
 // Expose defense events feed
 app.use(defenseEventsRouter);
 
 // Expose XCM monitor feed
 app.use(xcmRouter);
+
+// Expose AI model stats
+app.use('/api', aiStatsRouter);
 
 // Server configuration
 const PORT = process.env.PORT || 5000;

@@ -1,6 +1,7 @@
 .env
 .env.local
 .env.*
+frontend/.env*
 
 # Node
 node_modules/
@@ -18,3 +19,5 @@ Thumbs.db
 # Build outputs
 dist/
 build/
+node_modules/
+node_modules/
