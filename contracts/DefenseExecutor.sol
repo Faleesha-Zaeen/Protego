@@ -1,3 +1,4 @@
+import "@openzeppelin/contracts/utils/Pausable.sol";
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -13,7 +14,7 @@ interface IRiskRegistry {
 
 /// @title DefenseExecutor
 /// @notice Triggers automated defense actions when high-risk transactions are detected.
-contract DefenseExecutor {
+contract DefenseExecutor is Pausable {
     IGuardianVault public guardianVault;
     IRiskRegistry public riskRegistry;
     address public pvmRiskEngine;
@@ -39,6 +40,7 @@ contract DefenseExecutor {
     /// @param user The address of the user to evaluate.
     /// @param txCalldata The calldata to score via the PVM RiskEngine.
     function evaluateAndDefend(address user, bytes calldata txCalldata) external returns (uint8 score) {
+        require(!paused(), "DefenseExecutor is paused");
         bytes memory callData = abi.encodeWithSignature("assessRisk(bytes)", txCalldata);
         (bool success, bytes memory result) = pvmRiskEngine.call(callData);
         require(success, "PVM risk engine call failed");

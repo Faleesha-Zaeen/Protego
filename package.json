@@ -12,9 +12,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@nomicfoundation/hardhat-ethers": "^4.0.6",
-    "@nomicfoundation/hardhat-toolbox": "^7.0.0",
-    "hardhat": "^3.1.11"
+    "@nomicfoundation/hardhat-ethers": "^3.1.0",
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@parity/hardhat-polkadot": "^0.2.7",
+    "hardhat": "^2.26.0",
+    "solc": "0.8.20"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.6.1",

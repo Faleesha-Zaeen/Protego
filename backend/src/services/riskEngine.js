@@ -161,11 +161,7 @@ function buildExplanation(reasons) {
   if (!reasons || reasons.length === 0) {
     return 'No specific risk rules were triggered.';
   }
-  if (reasons.length === 1) return reasons[0];
-
-  const last = reasons[reasons.length - 1];
-  const head = reasons.slice(0, -1).join(', ');
-  return `${head} and ${last}.`;
+  return reasons.join(' ');
 }
 
 async function analyzeTransaction(tx) {
@@ -244,30 +240,23 @@ async function analyzeTransaction(tx) {
 
   let score = aiScore * 0.6 + rustScore * 0.4;
 
-  // Attach AI insight description
-  const aiRiskLevel = mapScoreToLevel(aiScore);
-  if (aiRiskLevel === 'HIGH') {
-    reasons.push('AI model marked this transaction as HIGH risk.');
-  } else if (aiRiskLevel === 'MEDIUM') {
-    reasons.push('AI model marked this transaction as MEDIUM risk.');
-  }
-
-  if (unknownContract) {
-    reasons.push('Contract is unknown.');
-  }
-
+  // Only use these reason messages:
   if (unlimitedApprovalFlag) {
-    reasons.push('Transaction requests unlimited token approval.');
+    reasons.push('Unlimited token approval detected.');
+  }
+  if (unknownContract) {
+    reasons.push('Contract is unverified and unknown.');
+  }
+  if (largeTransferFlag) {
+    reasons.push('Large value transfer detected.');
+  }
+  if (isBlacklisted(contractAddress)) {
+    reasons.push('Contract address is blacklisted.');
   }
 
   // Rule: Contract blacklist → +80
   if (isBlacklisted(contractAddress)) {
     score += 80;
-    reasons.push('Contract address is on the blacklist.');
-  }
-
-  if (largeTransferFlag) {
-    reasons.push('Transaction attempts a very large transfer (> 5 ETH or equivalent).');
   }
 
   // Cap score at 100

@@ -2,10 +2,11 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /// @title GuardianVault
 /// @notice Secure storage vault that holds user assets when a security threat is detected.
-contract GuardianVault is Ownable {
+contract GuardianVault is Ownable, ReentrancyGuard {
     mapping(address => uint256) public balances;
 
     event Deposit(address indexed user, uint256 amount);
@@ -15,7 +16,7 @@ contract GuardianVault is Ownable {
     constructor() Ownable(msg.sender) {}
 
     /// @notice Deposit native tokens into the vault and credit the sender's balance.
-    function deposit() external payable {
+    function deposit() external payable nonReentrant {
         require(msg.value > 0, "No value sent");
         balances[msg.sender] += msg.value;
         emit Deposit(msg.sender, msg.value);
@@ -23,7 +24,7 @@ contract GuardianVault is Ownable {
 
     /// @notice Withdraw a specific amount of previously deposited funds.
     /// @param amount The amount to withdraw.
-    function withdraw(uint256 amount) external {
+    function withdraw(uint256 amount) external nonReentrant {
         require(balances[msg.sender] >= amount, "Insufficient balance");
         balances[msg.sender] -= amount;
         (bool ok, ) = msg.sender.call{value: amount}("");
@@ -35,7 +36,7 @@ contract GuardianVault is Ownable {
     /// @dev Restricted to the contract owner (e.g., a defense executor).
     /// @param user The address of the user being protected.
     /// @param amount The amount to assign to the user's vault balance.
-    function secureTransfer(address user, uint256 amount) external onlyOwner {
+    function secureTransfer(address user, uint256 amount) external onlyOwner nonReentrant {
         require(address(this).balance >= amount, "Vault balance too low");
         balances[user] += amount;
         emit SecureTransfer(user, amount);

@@ -19,7 +19,7 @@ const config = {
       },
       url: "https://eth-rpc-testnet.polkadot.io/",
       chainId: 420420417,
-      accounts: [process.env.PRIVATE_KEY],
+      accounts: [process.env.PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000000"],
     },
   },
 };
