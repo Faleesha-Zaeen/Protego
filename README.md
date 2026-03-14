@@ -111,6 +111,17 @@ cd frontend && npm install && npm run dev
 | Cross-VM | DefenseExecutor (EVM) calls RiskEngine (PVM) |
 | XCM | Polkadot.js WebSocket subscription |
 | Network | Polkadot Hub TestNet (chain 420420417) |
+| Tests | 105/105 passing on Polkadot Hub TestNet |
+
+## Testing
+
+Run the full test suite on Polkadot Hub TestNet:
+
+```bash
+npx hardhat test --network polkadotTestnet
+```
+
+Result: 105/105 passing on live testnet
 
 ## Smart Contracts
 
@@ -148,6 +159,16 @@ transactions. Outputs continuous probability score 0-100.
 - Features: unlimited_approval, large_transfer, unknown_contract, 
   token_transfer, approval_amount
 - Combined with on-chain PVM scoring for two-layer protection
+
+## Rust Risk Engine
+
+Reference implementation of Protego's PVM risk scoring 
+precompile in `rust-risk-engine/src/lib.rs`.
+
+Implements the same scoring logic as RiskEngine.sol in Rust, 
+targeting PolkaVM (RISC-V). Planned for on-chain deployment 
+as a custom precompile when PolkaVM runtime supports custom 
+precompile registration.
 
 ## Why Polkadot?
 
