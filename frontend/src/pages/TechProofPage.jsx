@@ -224,23 +224,23 @@ export default function TechProofPage() {
         </GlassCard>
 
         <GlassCard>
-          <h2 className="text-lg font-semibold">Smart Contract Tests — 15/15 Passing</h2>
+          <h2 className="text-lg font-semibold">Smart Contract Tests — 105/105 Passing</h2>
           <div className="mt-4 space-y-3 text-sm text-slate-200">
             <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
               <span>RiskEngine (PVM)</span>
-              <span className="text-emerald-300">5/5 ✅</span>
+              <span className="text-emerald-300">28/28 ✅</span>
             </div>
             <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
               <span>DefenseExecutor</span>
-              <span className="text-emerald-300">6/6 ✅</span>
+              <span className="text-emerald-300">30/30 ✅</span>
             </div>
             <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
               <span>RiskRegistry</span>
-              <span className="text-emerald-300">3/3 ✅</span>
+              <span className="text-emerald-300">28/28 ✅</span>
             </div>
             <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
               <span>GuardianVault</span>
-              <span className="text-emerald-300">1/1 ✅</span>
+              <span className="text-emerald-300">19/19 ✅</span>
             </div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
               Network: Polkadot Hub TestNet (live)
