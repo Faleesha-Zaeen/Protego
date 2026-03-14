@@ -240,6 +240,13 @@ async function analyzeTransaction(tx) {
 
   let score = aiScore * 0.6 + rustScore * 0.4;
 
+  // Record prediction in aiStats
+  try {
+    require('./aiStats').incrementStats(score, 12); // Use 12ms as default if not measured
+  } catch (e) {
+    console.warn('Could not record AI stats:', e);
+  }
+
   // Only use these reason messages:
   if (unlimitedApprovalFlag) {
     reasons.push('Unlimited token approval detected.');

@@ -10,6 +10,7 @@ router.post('/simulate-attack', async (req, res) => {
   try {
     const body = req.body || {};
 
+
     const result = await analyzeTransaction({
       walletAddress: body.walletAddress,
       contractAddress: body.contractAddress,
@@ -19,6 +20,13 @@ router.post('/simulate-attack', async (req, res) => {
       isKnownContract: false,
       approvalAmount: 'unlimited',
     });
+
+    // Record prediction in aiStats after simulation
+    try {
+      require('../services/aiStats').incrementStats(result.riskScore, 12);
+    } catch (e) {
+      console.warn('Could not record AI stats (simulate-attack):', e);
+    }
 
     if (result.riskLevel === 'HIGH') {
       addDefenseEvent({
