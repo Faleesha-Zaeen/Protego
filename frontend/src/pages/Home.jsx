@@ -62,18 +62,22 @@ export default function Home() {
 
 function StatCard({ value, label }) {
   return (
-    <div className="rounded-2xl bg-card/70 border border-border shadow-glass p-6 flex flex-col items-center justify-center backdrop-blur-md">
-      <span className="text-2xl md:text-3xl font-bold text-accent drop-shadow-glow">{value}</span>
-      <span className="mt-2 text-xs md:text-sm text-slate-200 text-center font-medium">{label}</span>
+    <div
+      className="rounded-2xl bg-card/70 border border-border shadow-glass p-6 flex flex-col items-center justify-center backdrop-blur-md transition-all duration-200 hover:scale-105 hover:shadow-glow-lg hover:border-accent/60 cursor-pointer group"
+    >
+      <span className="text-2xl md:text-3xl font-bold text-accent drop-shadow-glow group-hover:text-accent/90 transition-colors duration-200">{value}</span>
+      <span className="mt-2 text-xs md:text-sm text-slate-200 text-center font-medium group-hover:text-white transition-colors duration-200">{label}</span>
     </div>
   );
 }
 
 function FeatureCard({ title, desc }) {
   return (
-    <div className="rounded-2xl bg-card/60 border border-border shadow-glass p-7 flex flex-col items-center text-center backdrop-blur-md">
-      <span className="text-base md:text-lg font-semibold text-white mb-2">{title}</span>
-      <span className="text-sm text-slate-300">{desc}</span>
+    <div
+      className="rounded-2xl bg-card/60 border border-border shadow-glass p-7 flex flex-col items-center text-center backdrop-blur-md transition-all duration-200 hover:scale-105 hover:shadow-glow-lg hover:border-accent/60 cursor-pointer group"
+    >
+      <span className="text-base md:text-lg font-semibold text-white mb-2 group-hover:text-accent transition-colors duration-200">{title}</span>
+      <span className="text-sm text-slate-300 group-hover:text-white transition-colors duration-200">{desc}</span>
     </div>
   );
 }
