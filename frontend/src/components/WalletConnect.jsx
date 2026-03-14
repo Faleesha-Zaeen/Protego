@@ -30,11 +30,11 @@ export default function WalletConnect({ isExpanded = true }) {
   return (
     <button
       onClick={connectWallet}
-      className={`flex items-center justify-center gap-2 bg-primary text-white px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer w-full ${
-        isExpanded ? "" : "px-2"
-      }`}
+      className={`flex items-center justify-center gap-2 w-full h-12 px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer transition-colors shadow-glow
+        ${isExpanded ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-blue-600 text-white"}
+      `}
     >
-      <Wallet className="w-4 h-4" />
+      <Wallet className="w-5 h-5" />
       {isExpanded &&
         (account
           ? `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`

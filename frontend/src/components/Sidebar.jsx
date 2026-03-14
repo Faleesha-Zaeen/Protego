@@ -24,7 +24,7 @@ export default function Sidebar() {
     >
       <div className="flex items-center gap-3 px-2">
         <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-slate-950 shadow-glow">
-          <span className="text-sm font-bold">AD</span>
+          <span className="text-xl font-bold">P</span>
         </div>
         <AnimatePresence>
           {isExpanded && (
@@ -79,10 +79,8 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="mt-auto">
-        <div className="rounded-xl border border-border/80 bg-[#0B0F19] p-2">
-          <WalletConnect isExpanded={isExpanded} />
-        </div>
+      <div className="mt-auto flex flex-col">
+        <WalletConnect isExpanded={isExpanded} />
       </div>
     </motion.aside>
   );

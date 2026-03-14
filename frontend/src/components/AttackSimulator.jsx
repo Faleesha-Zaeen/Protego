@@ -74,14 +74,12 @@ export default function AttackSimulator({
         onClick={handleSimulate}
         disabled={loading}
         whileTap={{ scale: 0.96 }}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-warning to-amber-500 text-slate-900 font-semibold shadow-glow disabled:opacity-60"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-glow disabled:opacity-60 transition-colors"
       >
         {loading ? (
           <ShieldCheck className="w-4 h-4 animate-pulse" />
-        ) : (
-          <Zap className="w-4 h-4" />
-        )}
-        {loading ? "Running attack simulation..." : "⚡ Simulate Malicious Transaction"}
+        ) : null}
+        {loading ? "Running attack simulation..." : "Simulate Malicious Transaction"}
       </motion.button>
       {defenseTx && (
         <div className="mt-4 text-sm text-safe">
