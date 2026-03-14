@@ -18,10 +18,7 @@ export default function TopHeader() {
             <h1 className="text-lg font-semibold text-slate-50">Protego</h1>
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline-flex items-center gap-2 rounded-full border border-border/80 bg-card/70 px-3 py-1 text-xs text-slate-200">
-              <span className="h-2 w-2 rounded-full bg-accent shadow-glow"></span>
-              Polkadot Hub Testnet
-            </span>
+            {/* Removed Polkadot Hub Testnet badge */}
             <WalletConnect />
           </div>
         </div>

@@ -1,4 +1,4 @@
-use rust_risk_engine::calculate_risk;
+use rust_risk_engine::assess_risk;
 
 fn parse_flag(arg: &str) -> bool {
     match arg.to_ascii_lowercase().as_str() {
@@ -19,6 +19,6 @@ fn main() {
     let large_transfer = parse_flag(&args[2]);
     let unknown_contract = parse_flag(&args[3]);
 
-    let score = calculate_risk(unlimited_approval, large_transfer, unknown_contract);
-    println!("Risk Score: {}", score);
+    let score = assess_risk(unlimited_approval, large_transfer, unknown_contract);
+    println!("Risk score: {}", score);
 }
