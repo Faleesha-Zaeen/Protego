@@ -7,10 +7,37 @@
 body {
   @apply bg-background text-slate-100 antialiased;
   font-family: "Space Grotesk", sans-serif;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
+  background: #0a0a0f !important;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(0.5px);
+}
+
+body::before {
+  top: -200px;
+  left: -200px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(30,58,95,0.3) 0%, rgba(10,10,15,0.0) 80%);
+  opacity: 1;
+}
+
+body::after {
+  bottom: -150px;
+  right: -150px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(45,27,78,0.2) 0%, rgba(10,10,15,0.0) 80%);
+  opacity: 1;
 }
 
 h1,
