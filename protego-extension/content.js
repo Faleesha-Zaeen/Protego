@@ -5,95 +5,33 @@
 
   window.ethereum.request = async function (args) {
     if (args && args.method === 'eth_sendTransaction' && Array.isArray(args.params)) {
-      const txParams = args.params[0];
-      // Send transaction params to background.js
-      const response = await new Promise((resolve) => {
-        chrome.runtime.sendMessage({ type: 'PROTEGO_ANALYZE', txParams }, resolve);
-      });
-      if (response && response.score !== undefined) {
-        // Store last scanned transaction for popup
-        chrome.storage && chrome.storage.local && chrome.storage.local.set({
-          protego_last_tx: {
-            tx: txParams,
 
-            (function() {
-              if (typeof window.ethereum === 'undefined') return;
-  
-              const originalRequest = window.ethereum.request.bind(window.ethereum);
-  
-              window.ethereum.request = async function(args) {
-                if (args.method === 'eth_sendTransaction' || 
-                    args.method === 'eth_signTransaction') {
-      
-                  const tx = args.params[0];
-      
-                  chrome.runtime.sendMessage({
-                    type: 'ANALYZE_TRANSACTION',
-                    transaction: tx
-                  }, async (response) => {
-                    if (response && response.score > 70) {
-                      showBlockingOverlay(response.score, response.explanation);
-                    }
-                  });
-      
-                  const score = await getScore(tx);
-                  if (score > 70) {
-                    return new Promise((resolve, reject) => {
-                      showBlockingOverlay(score, 'High risk transaction detected', 
-                        () => reject(new Error('Blocked by Protego')),
-                        () => resolve(originalRequest(args))
-                      );
-                    });
-                  }
-                }
-                return originalRequest(args);
-              };
-  
-              async function getScore(tx) {
-                try {
-                  const response = await fetch(
-                    'https://protego-z3ra.onrender.com/api/analyze-transaction',
-                    {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        walletAddress: tx.from || '0x0000000000000000000000000000000000000000',
-                        contractAddress: tx.to || '0x0000000000000000000000000000000000000000',
-                        value: tx.value || '0',
-                        calldata: tx.data || '0x'
-                      })
-                    }
-                  );
-                  const data = await response.json();
-                  return data.score || 0;
-                } catch (e) {
-                  return 0;
-                }
-              }
-  
-              function showBlockingOverlay(score, explanation, onBlock, onProceed) {
-                const overlay = document.createElement('div');
-                overlay.id = 'protego-overlay';
-                overlay.style.cssText = `
-                  position: fixed;
-                  top: 0; left: 0;
-                  width: 100%; height: 100%;
-                  background: rgba(0,0,0,0.85);
-                  z-index: 999999;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-                `;
-    
-                const scoreColor = score >= 70 ? '#ef4444' : score >= 40 ? '#f59e0b' : '#22c55e';
-                const level = score >= 70 ? 'HIGH' : score >= 40 ? 'MEDIUM' : 'LOW';
-    
-                overlay.innerHTML = `
-                  <div style="
-                    background: rgba(15,15,25,0.95);
-                    border: 1px solid rgba(239,68,68,0.5);
-                    border-radius: 16px;
+      const script = document.createElement('script');
+      script.src = chrome.runtime.getURL('injected.js');
+      script.onload = function() { this.remove(); };
+      (document.head || document.documentElement).appendChild(script);
+
+      window.addEventListener('message', function(event) {
+        if (event.source !== window) return;
+        if (event.data.type === 'PROTEGO_ANALYZE') {
+          fetch('https://protego-z3ra.onrender.com/api/analyze-transaction', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(event.data.transaction)
+          })
+          .then(r => r.json())
+          .then(data => {
+            window.postMessage({
+              type: 'PROTEGO_RESULT',
+              score: data.score || 0,
+              explanation: data.explanation || 'Risk assessed'
+            }, '*');
+          })
+          .catch(() => {
+            window.postMessage({ type: 'PROTEGO_RESULT', score: 0 }, '*');
+          });
+        }
+      });
                     padding: 32px;
                     max-width: 420px;
                     width: 90%;

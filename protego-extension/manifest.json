@@ -17,5 +17,11 @@
   "action": {
     "default_popup": "popup.html",
     "default_title": "Protego Security"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["injected.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
