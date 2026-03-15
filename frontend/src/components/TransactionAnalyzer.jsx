@@ -250,7 +250,10 @@ export default function TransactionAnalyzer() {
     pushLog("MetaMask transaction submitted. Waiting for confirmation...");
     const receipt = await tx.wait();
     if (receipt?.status === 1n || receipt?.status === 1) {
-      pushLog("Approval confirmed on-chain.");
+      const txHash = receipt?.hash || tx?.hash;
+      pushLog(
+        `Approval confirmed on-chain. <a href="https://blockscout-testnet.polkadot.io/tx/${txHash}" target="_blank">View on Blockscout ↗</a>`
+      );
     } else {
       pushLog("Approval transaction failed or was reverted.");
     }

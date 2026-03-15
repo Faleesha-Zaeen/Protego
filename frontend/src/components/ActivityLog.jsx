@@ -50,7 +50,7 @@ export default function ActivityLog({ entries }) {
               <span className="text-slate-500 min-w-[72px]">
                 [{entry.time}]
               </span>
-              <span>{entry.message}</span>
+              <span dangerouslySetInnerHTML={{ __html: entry.message }} />
             </motion.div>
           ))}
         </AnimatePresence>
