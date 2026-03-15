@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Protego — Web3 Security Firewall</title>
+    <link rel="stylesheet" href="popup.css" />
+    <style>
+      body {
+        background: #0a0a0f;
+        color: #fff;
+        font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+        margin: 0;
+        min-width: 340px;
+        min-height: 340px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .protego-logo {
+        margin-top: 2.2rem;
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        background: rgba(255,255,255,0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 12px #fff1;
+      }
+      .protego-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 1.2rem 0 0.5rem;
+        letter-spacing: 0.01em;
+      }
+      .status-badge {
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 0.2rem 0.8rem;
+        margin-bottom: 1.2rem;
+        margin-top: 0.2rem;
+        background: linear-gradient(90deg,#22c55e33,#facc1533,#ef444433);
+        color: #fff;
+        box-shadow: 0 1px 6px #0002;
+        display: inline-block;
+      }
+      .risk-badge {
+        font-size: 0.98rem;
+        font-weight: 700;
+        border-radius: 8px;
+        padding: 0.18rem 0.7rem;
+        margin-left: 0.5rem;
+        color: #fff;
+        display: inline-block;
+      }
+      .risk-low { background: #22c55e; }
+      .risk-medium { background: #facc15; color: #222; }
+      .risk-high { background: #ef4444; }
+      .last-tx {
+        margin-top: 1.2rem;
+        font-size: 0.98rem;
+        color: #e5e7eb;
+        word-break: break-all;
+        text-align: center;
+      }
+      .explanation {
+        margin-top: 0.7rem;
+        font-size: 0.97rem;
+        color: #cbd5e1;
+        text-align: center;
+        max-width: 90vw;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="protego-logo">
+      <img src="icon128.png" alt="Protego Logo" style="width:38px;height:38px;" />
+    </div>
+    <div class="protego-title">Protego</div>
+    <div class="status-badge" id="protego-status">ACTIVE</div>
+    <div class="last-tx" id="protego-last-tx">No transaction scanned yet.</div>
+    <div class="explanation" id="protego-explanation"></div>
+    <script src="popup.js"></script>
+  </body>
+</html>
