@@ -15,7 +15,7 @@ import AttackSimulator from "./AttackSimulator.jsx";
 import WalletProtectionPanel from "./WalletProtectionPanel.jsx";
 
 const backendBaseUrl =
-  import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "") || "http://localhost:5000";
+  import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 const LAST_TRANSACTION_STORAGE_KEY = "protego:last-transaction";
 const LAST_TRANSACTION_EVENT = "protego:last-transaction";
 const ANALYSIS_COUNT_KEY = "protego:analysis-count";

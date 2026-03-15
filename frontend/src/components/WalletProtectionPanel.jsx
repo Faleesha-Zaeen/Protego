@@ -14,7 +14,7 @@ import { ShieldCheck, ShieldAlert, Loader2 } from "lucide-react";
 import { analyzeTransaction } from "../api/backend";
 
 const backendBaseUrl =
-  import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "") || "http://localhost:5000";
+  import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 const statusColors = {
   BLOCKED: "bg-red-500/10 text-danger border border-danger/40",

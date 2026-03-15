@@ -22,7 +22,7 @@ function getRiskBadge(score) {
 export default function XcmThreatAlerts() {
   const [alerts, setAlerts] = useState([]);
   const backendBaseUrl =
-    import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "") || "http://localhost:5000";
+    import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
   useEffect(() => {
     let isMounted = true;

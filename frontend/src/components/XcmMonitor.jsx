@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 export default function XcmMonitor() {
   const [events, setEvents] = useState([]);
   const backendBaseUrl =
-    import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "") || "http://localhost:5000";
+    import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
   useEffect(() => {
     let isMounted = true;

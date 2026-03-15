@@ -5,7 +5,7 @@ export default function AIModelStatus() {
   const [usingFallback, setUsingFallback] = useState(false);
   const fallbackSeed = useRef(20 + Math.floor(Math.random() * 10));
   const backendBaseUrl =
-    import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "") || "http://localhost:5000";
+    import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
   useEffect(() => {
     let isMounted = true;
