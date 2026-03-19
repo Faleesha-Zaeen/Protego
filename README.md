@@ -4,6 +4,10 @@
 > transactions before signatures land on-chain, enforces risk limits 
 > via a PVM smart contract, and triggers automated on-chain defenses 
 > when threats are detected.
+>
+>
+>   **Live dApp:** https://protego-3oeb.vercel.app
+>   **Cross-VM Proof TX:** [0x9890fd...209e9](https://blockscout-testnet.polkadot.io/tx/0x9890fd9602ec8db8bb99943760d91b85046129360e25f87c1ad481b318d209e9)
 
 ## What Protego Does
 
